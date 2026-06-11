@@ -56,17 +56,17 @@
             <div class="mb-5 text-left">
                 <p class="font-bold text-gray-700 mb-2 text-sm" data-i18n="control_type">Control Method:</p>
                 <div class="flex bg-gray-200 rounded-lg p-1">
-                    <button id="ctrl-gyro" class="flex-1 py-2 text-sm font-bold bg-blue-500 text-white rounded shadow transition-colors" data-i18n="ctrl_gyro">📱 Gyro</button>
-                    <button id="ctrl-touch" class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors" data-i18n="ctrl_touch">👆 Touch</button>
+                    <button id="ctrl-gyro" class="flex-1 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors bg-transparent" data-i18n="ctrl_gyro">📱 Gyro</button>
+                    <button id="ctrl-touch" class="flex-1 py-2 text-sm font-bold bg-blue-500 text-white rounded shadow transition-colors" data-i18n="ctrl_touch">👆 Touch</button>
                 </div>
             </div>
 
-            <div id="gyro-settings" class="mb-6 text-left">
+            <div id="gyro-settings" class="mb-6 text-left hidden">
                 <div class="flex justify-between items-end mb-2">
                     <p class="font-bold text-gray-700 text-sm" data-i18n="gyro_sens">Gyro Sensitivity:</p>
                     <span id="sens-val" class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">1.0x</span>
                 </div>
-                <input type="range" id="slider-sens" min="0.5" max="2.5" step="0.1" value="1.0" class="w-full">
+                <input type="range" id="slider-sens" min="0.5" max="5.0" step="0.1" value="1.0" class="w-full">
                 <div class="flex justify-between text-xs text-gray-400 mt-1 font-semibold">
                     <span data-i18n="sens_low">Slow</span>
                     <span data-i18n="sens_high">Fast</span>
@@ -79,7 +79,7 @@
         <!-- Main Menu -->
         <div id="main-menu" class="pointer-events-auto bg-white/95 p-8 rounded-3xl shadow-xl text-center w-80 backdrop-blur-sm transition-all flex flex-col z-20">
             <h1 class="text-4xl font-extrabold mb-2 text-green-500 drop-shadow-sm" data-i18n="title">You Jump I Jump</h1>
-            <p class="text-gray-500 mb-6 text-sm font-semibold" id="menu-subtitle" data-i18n="subtitle_gyro">Tilt to move, Auto-shoots!</p>
+            <p class="text-gray-500 mb-6 text-sm font-semibold" id="menu-subtitle" data-i18n="subtitle_touch">Tap sides to move, Auto-shoots!</p>
             <button id="btn-start" class="bg-green-500 text-white px-6 py-3 rounded-2xl text-xl font-bold hover:bg-green-600 w-full mb-3 shadow-lg transform active:scale-95 transition-transform" data-i18n="play">Play Game</button>
             <button id="btn-store" class="bg-purple-500 text-white px-6 py-3 rounded-2xl text-xl font-bold hover:bg-purple-600 w-full shadow-lg transform active:scale-95 transition-transform" data-i18n="store_btn">Store</button>
         </div>
@@ -219,15 +219,15 @@
 
         let storeTab = 'chars'; 
 
-        // --- Local Storage Setup (Replaced Firebase for GitHub Pages) ---
-        const SAVE_KEY = 'YouJumpIJump_SaveData_v2'; // Bumped version for new settings
+        // --- Local Storage Setup ---
+        const SAVE_KEY = 'YouJumpIJump_SaveData_v3'; // Bumped version
         let playerData = {
             highScore: 0, coins: 0, extraLives: 0,
             unlockedChars: ['default'], selectedChar: 'default',
             unlockedAccs: ['none'], selectedAcc: 'none',
-            // New Settings Defaults
-            controlMethod: 'gyro', // 'gyro' or 'touch'
-            gyroSensitivity: 1.2    // Increased default slightly for better feel
+            // Default to touch, and sensitivity to 1.0 (though it goes up to 5.0)
+            controlMethod: 'touch', 
+            gyroSensitivity: 1.0    
         };
 
         function loadPlayerData() {
@@ -235,7 +235,6 @@
                 const savedData = localStorage.getItem(SAVE_KEY);
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // Merge logic to keep defaults for new fields if old save
                     playerData = { ...playerData, ...parsed };
                 }
             } catch (e) { console.error("Error loading data:", e); }
@@ -430,6 +429,7 @@
             projectiles.push({ x: player.x + player.width / 2, y: player.y, vx: vx, vy: vy, dead: false, weapon: selected, target: targetEnemy });
             player.shootTimer = 15;
             
+            // Only Flyer flies when shooting without rocket. Astronaut flies ONLY when having rocket powerup.
             if (selected.id === 'flyer' && player.activePowerUp !== 'rocket') player.vy = player.jumpPower * 0.9;
         }
 
@@ -1036,7 +1036,6 @@
             if (playerData.controlMethod === 'gyro' && tiltActive && tiltVx !== 0) {
                 player.vx = tiltVx;
             } else if (playerData.controlMethod === 'touch' && touchX !== null) {
-                // Determine direction based on touch position relative to player
                 if (touchX < CW / 2) player.vx = -player.speed;
                 else player.vx = player.speed;
             } else if (keys.left) {
