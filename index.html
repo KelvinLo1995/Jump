@@ -11,18 +11,16 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         
-        /* 隱藏原生滑動列預設樣式並自訂 */
+        /* 自訂滑動列樣式 */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -7px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 3px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -9px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #e2e8f0; border-radius: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
         input[type=range]:focus { outline: none; }
         
         /* 超強文字邊框 */
-        .text-outline { text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
-        
-        /* 齒輪動畫 */
-        @keyframes spin-slow { 100% { transform: rotate(360deg); } }
-        .hover-spin:hover svg { animation: spin-slow 3s linear infinite; }
+        .text-outline {
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        }
     </style>
 </head>
 <body class="w-screen h-screen flex items-center justify-center relative select-none">
@@ -38,29 +36,25 @@
             🌐 EN / 中
         </button>
 
-        <!-- Q版設定按鈕 (巨大化、黃色立體) -->
-        <button id="btn-settings-toggle" class="hidden hover-spin pointer-events-auto absolute top-3 right-4 bg-yellow-400 hover:bg-yellow-300 w-12 h-12 rounded-full shadow-[0_4px_0_#ca8a04] active:shadow-[0_0px_0_#ca8a04] active:translate-y-1 transition-all z-20 flex items-center justify-center border-2 border-white">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 text-white drop-shadow-md">
-                <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a9.53 9.53 0 00-1.864 1.076c-.153.115-.3.11-.412.036L4.79 5.282c-.81-.545-1.924-.29-2.405.57l-1.157 2c-.48.86-.243 1.956.544 2.502l1.583 1.096c.11.076.16.195.16.32v.458c0 .125-.05.244-.16.32l-1.583 1.096c-.787.546-1.024 1.642-.544 2.502l1.157 2c.48.86 1.594 1.115 2.405.57l1.688-1.135c.112-.074.259-.079.412.036.59.447 1.21.84 1.864 1.076.182.088.277.228.297.348l.178 1.072c.151.904.933 1.567 1.85 1.567h2.314c.917 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.115-.26.297-.348.654-.236 1.274-.63 1.864-1.076.153-.115.3-.11.412-.036l1.688 1.135c.81.545 1.924.29 2.405-.57l1.157-2c.48-.86.243-1.956-.544-2.502l-1.583-1.096c-.11-.076-.16-.195-.16-.32v-.458c0-.125.05-.244.16-.32l1.583-1.096c.787-.546 1.024-1.642.544-2.502l-1.157-2c-.48-.86-1.594-1.115-2.405-.57l-1.688 1.135c-.112.074-.259.079-.412-.036-.59-.447-1.21-.84-1.864-1.076-.182-.088-.277-.228-.297-.348l-.178-1.072c-.151-.904-.933-1.567-1.85-1.567h-2.314zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
-            </svg>
+        <!-- Q版巨型設定按鈕 -->
+        <button id="btn-settings-toggle" class="hidden pointer-events-auto absolute top-4 right-4 bg-gradient-to-br from-blue-400 to-blue-600 text-white w-14 h-14 rounded-full text-3xl font-extrabold shadow-[0_4px_15px_rgba(0,0,0,0.3)] border-4 border-white hover:scale-110 active:scale-95 transition-all z-20 flex items-center justify-center">
+            ⚙️
         </button>
 
-        <!-- HUD (優化高對比顯示) -->
+        <!-- HUD -->
         <div id="hud" class="hidden absolute top-0 left-0 w-full max-w-md mx-auto h-full pointer-events-none flex-col justify-start p-4 z-10">
             <div class="flex justify-between items-start w-full">
-                <!-- 左側分數與 Q 版生命值 -->
                 <div class="text-left text-white flex flex-col text-outline drop-shadow-md" id="hud-left">
                     <span class="text-2xl font-extrabold tracking-wide"><span data-i18n="score">Score</span>: <span id="hud-score">0</span></span>
                     <span id="hud-lives" class="flex mt-1 items-center"></span>
                 </div>
-                <!-- 右側金幣 -->
                 <div class="text-right text-yellow-400 flex flex-col text-outline drop-shadow-md" id="hud-right">
                     <span class="text-2xl font-extrabold tracking-wide"><span data-i18n="coins">Coins</span>: <span id="hud-coins">0</span></span>
                 </div>
             </div>
         </div>
 
-        <!-- Settings Menu (Popup) -->
+        <!-- Settings Menu -->
         <div id="settings-menu" class="hidden pointer-events-auto absolute bg-white/95 p-6 rounded-3xl shadow-2xl text-center w-72 backdrop-blur-md z-30 border border-gray-100">
             <h2 class="text-2xl font-extrabold mb-4 text-gray-800" data-i18n="settings_title">Settings</h2>
             
@@ -72,12 +66,12 @@
                 </div>
             </div>
 
-            <div id="gyro-settings" class="mb-6 text-left hidden">
+            <div id="gyro-settings" class="mb-6 text-left">
                 <div class="flex justify-between items-end mb-2">
-                    <p class="font-bold text-gray-700 text-sm" data-i18n="gyro_sens">Gyro Sensitivity:</p>
-                    <span id="sens-val" class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">5</span>
+                    <p id="sens-label" class="font-bold text-gray-700 text-sm" data-i18n="touch_sens">Touch Sensitivity:</p>
+                    <span id="sens-val" class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">1.0x</span>
                 </div>
-                <input type="range" id="slider-sens" min="1" max="10" step="1" value="5" class="w-full">
+                <input type="range" id="slider-sens" min="0.5" max="5.0" step="0.1" value="1.0" class="w-full">
                 <div class="flex justify-between text-xs text-gray-400 mt-1 font-semibold">
                     <span data-i18n="sens_low">Slow</span>
                     <span data-i18n="sens_high">Fast</span>
@@ -96,28 +90,28 @@
         </div>
 
         <!-- Store Menu -->
-        <div id="store-menu" class="hidden pointer-events-auto bg-white/95 p-6 rounded-3xl shadow-xl text-center w-80 max-h-[85vh] flex flex-col backdrop-blur-sm z-20">
-            <h2 class="text-3xl font-extrabold mb-1 text-gray-800" data-i18n="store_title">Store</h2>
-            <p class="text-yellow-500 font-bold mb-3 text-lg"><span data-i18n="your_coins">Your Coins</span>: <span id="store-coins">0</span></p>
+        <div id="store-menu" class="hidden pointer-events-auto bg-white/95 p-5 sm:p-6 rounded-3xl shadow-xl text-center w-[90%] max-w-sm max-h-[85vh] sm:max-h-[80vh] flex flex-col backdrop-blur-sm z-20">
+            <h2 class="text-3xl font-extrabold mb-1 text-gray-800 flex-shrink-0" data-i18n="store_title">Store</h2>
+            <p class="text-yellow-500 font-bold mb-3 text-lg flex-shrink-0"><span data-i18n="your_coins">Your Coins</span>: <span id="store-coins">0</span></p>
             
             <div class="flex justify-between items-center bg-blue-50 border border-blue-200 p-3 rounded-xl mb-3 shadow-sm flex-shrink-0">
                 <div class="text-left flex flex-col">
                     <span class="font-bold text-blue-800 text-sm sm:text-base" data-i18n="store_extra_life">Extra Life 💖</span>
                     <span class="text-xs text-blue-600 font-semibold"><span data-i18n="owned">Owned: </span><span id="store-lives-count">0</span></span>
                 </div>
-                <button id="btn-buy-life" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full font-bold text-xs sm:text-sm shadow-sm" onclick="window.buyExtraLife()">
+                <button id="btn-buy-life" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1 rounded-full font-bold text-xs sm:text-sm shadow-sm flex-shrink-0" onclick="window.buyExtraLife()">
                     <span data-i18n="buy">Buy</span> 1000 🪙
                 </button>
             </div>
 
-            <div class="flex bg-gray-200 rounded-lg p-1 mb-3 flex-shrink-0">
+            <div class="flex bg-gray-200 rounded-lg p-1 mb-2 flex-shrink-0">
                 <button id="tab-chars" class="flex-1 py-1 text-sm font-bold bg-white rounded shadow text-purple-600" data-i18n="tab_chars">Characters</button>
                 <button id="tab-accs" class="flex-1 py-1 text-sm font-bold text-gray-500 hover:text-gray-700" data-i18n="tab_accs">Accessories</button>
             </div>
 
-            <div id="store-items" class="flex flex-col gap-3 mb-4 overflow-y-auto flex-grow p-1 min-h-0"></div>
+            <div id="store-items" class="flex flex-col gap-3 mb-3 overflow-y-auto flex-1 min-h-0 p-1"></div>
             
-            <button id="btn-store-back" class="bg-gray-500 text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-600 w-full shadow-lg transform active:scale-95 transition-transform mt-2 flex-shrink-0" data-i18n="back">Back to Menu</button>
+            <button id="btn-store-back" class="bg-gray-500 text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-600 w-full shadow-lg transform active:scale-95 transition-transform mt-auto flex-shrink-0" data-i18n="back">Back to Menu</button>
         </div>
 
         <!-- Revive Prompt Menu -->
@@ -159,32 +153,32 @@
                 play: "Play Game", store_btn: "Store",
                 score: "Score", coins: "Coins", store_title: "Store", your_coins: "Your Coins",
                 back: "Back to Menu", game_over: "Game Over!", best: "Best", play_again: "Play Again", main_menu: "Main Menu",
-                tab_chars: "Characters", tab_accs: "Accessories", equipped: "Equipped", equip: "Equip", unequip: "Unequip", buy: "Buy",
+                tab_chars: "Characters", tab_accs: "Accessories", equipped: "Equipped", equip: "Equip", buy: "Buy", unequip: "Unequip",
                 share: "Share Score", share_text: "I scored {score} points in You Jump I Jump! Can you beat me?",
                 store_extra_life: "Extra Life 💖", owned: "Owned: ", revive_title: "Revive?", revive_desc: "You fell! Spend 1000 coins to revive?",
                 btn_use_life: "Use Extra Life", btn_buy_life: "Buy Revive (1000 🪙)", btn_skip_revive: "Skip & End Game",
                 settings_title: "Settings", control_type: "Control Method:", ctrl_gyro: "📱 Gyro", ctrl_touch: "👆 Touch",
-                gyro_sens: "Gyro Sensitivity:", sens_low: "Slow", sens_high: "Fast", btn_done: "Done",
+                gyro_sens: "Gyro Sensitivity:", touch_sens: "Touch Sensitivity:", sens_low: "Slow", sens_high: "Fast", btn_done: "Done",
                 w_pellet: "Pellets (1 DMG)", w_orb: "Orbs (2 DMG)", w_shuriken: "Shurikens (2 DMG)", w_acid: "Acid (4 DMG)",
                 w_heart: "Homing Hearts (2 DMG)", w_laser: "Auto-Lasers (3 DMG)", w_gold: "Homing Gold (5 DMG)", w_wind: "Wind Gusts (3 DMG)", w_plasma: "Plasma (4 DMG, Fast)",
                 c_alien: "Green Alien", c_ghost: "Spooky Ghost", c_ninja: "Ninja", c_slime: "Sludge Slime", c_pinky: "Pinky", c_cyborg: "Cyborg", c_gold: "Golden King", c_flyer: "Super Fly", c_astronaut: "Astronaut (Rocket 5s)",
-                a_cap: "Red Cap (1 Enemy Shield)", a_glasses: "Sunglasses (Cool)", a_star: "Star Clip (Cute)", a_gloves: "White Gloves (1 Bomb Shield)", a_shoes: "Sports Shoes (Springs 5s)"
+                a_none: "Remove All Accessories", a_cap: "Red Cap (1 Enemy Shield)", a_glasses: "Sunglasses (Cool)", a_star: "Star Clip (Cute)", a_gloves: "White Gloves (1 Bomb Shield)", a_shoes: "Sports Shoes (Springs 5s)"
             },
             zh: {
                 title: "You Jump I Jump", subtitle_gyro: "傾斜手機移動，自動瞄準射擊！", subtitle_touch: "點擊左右移動，自動瞄準射擊！", 
                 play: "開始遊戲", store_btn: "商店",
                 score: "分數", coins: "金幣", store_title: "商店", your_coins: "你的金幣",
                 back: "返回主選單", game_over: "遊戲結束！", best: "最高分", play_again: "再玩一次", main_menu: "返回主選單",
-                tab_chars: "角色", tab_accs: "飾品", equipped: "已裝備", equip: "裝備", unequip: "卸下", buy: "購買",
+                tab_chars: "角色", tab_accs: "飾品", equipped: "已裝備", equip: "裝備", buy: "購買", unequip: "卸下",
                 share: "分享分數", share_text: "我在 You Jump I Jump 拿了 {score} 分！你能打敗我嗎？",
                 store_extra_life: "後備生命 💖", owned: "擁有: ", revive_title: "復活繼續？", revive_desc: "跌親添！要唔要用 1000 金幣復活繼續破紀錄？",
                 btn_use_life: "使用後備生命", btn_buy_life: "購買復活 (1000 🪙)", btn_skip_revive: "放棄並結算",
                 settings_title: "遊戲設定", control_type: "控制方式：", ctrl_gyro: "📱 陀螺儀", ctrl_touch: "👆 觸控",
-                gyro_sens: "陀螺儀靈敏度：", sens_low: "遲鈍", sens_high: "靈敏", btn_done: "完成",
+                gyro_sens: "陀螺儀靈敏度：", touch_sens: "觸控靈敏度：", sens_low: "遲鈍", sens_high: "極速", btn_done: "完成",
                 w_pellet: "小豆豆 (1 傷害)", w_orb: "幽靈光球 (2 傷害)", w_shuriken: "高速飛鏢 (2 傷害)", w_acid: "強酸液 (4 傷害)",
                 w_heart: "追蹤愛心 (2 傷害)", w_laser: "自動雷射 (3 傷害)", w_gold: "追蹤金幣 (5 傷害)", w_wind: "風刃 (3 傷害)", w_plasma: "等離子炮 (4 傷害)",
                 c_alien: "綠色外星人", c_ghost: "幽靈", c_ninja: "忍者", c_slime: "史萊姆", c_pinky: "粉紅甜心", c_cyborg: "生化人", c_gold: "黃金國王", c_flyer: "飛行俠 (可飛)", c_astronaut: "太空人 (火箭 5秒)",
-                a_cap: "紅帽子 (擋 1 次敵人)", a_glasses: "太陽眼鏡 (純粹有型)", a_star: "星星髮夾 (純粹可愛)", a_gloves: "白手套 (擋 1 次炸彈)", a_shoes: "運動鞋 (跳跳鞋 5秒)"
+                a_none: "一鍵卸下所有飾品", a_cap: "紅帽子 (擋 1 次敵人)", a_glasses: "太陽眼鏡 (純粹有型)", a_star: "星星髮夾 (純粹可愛)", a_gloves: "白手套 (擋 1 次炸彈)", a_shoes: "運動鞋 (跳跳鞋 5秒)"
             }
         };
         let currentLang = 'zh';
@@ -196,6 +190,11 @@
             });
             const subKey = playerData.controlMethod === 'touch' ? 'subtitle_touch' : 'subtitle_gyro';
             document.getElementById('menu-subtitle').innerText = i18n[currentLang][subKey];
+            
+            const sensLabel = document.getElementById('sens-label');
+            if (sensLabel) {
+                sensLabel.innerText = playerData.controlMethod === 'gyro' ? i18n[currentLang].gyro_sens : i18n[currentLang].touch_sens;
+            }
             if (state === 'STORE') updateStoreUI();
         }
 
@@ -218,6 +217,7 @@
         ];
 
         const ACCESSORIES = [
+            { id: 'none', nameKey: 'a_none', price: 0, icon: '🚫' },
             { id: 'cap', nameKey: 'a_cap', price: 100, icon: '🧢' },
             { id: 'glasses', nameKey: 'a_glasses', price: 150, icon: '🕶️' },
             { id: 'star', nameKey: 'a_star', price: 200, icon: '⭐' },
@@ -227,31 +227,77 @@
 
         let storeTab = 'chars'; 
 
-        // --- Local Storage Setup ---
-        const SAVE_KEY = 'YouJumpIJump_SaveData_v5';
+        // --- 全新無縫資料轉移系統 (Migration System) ---
+        const FINAL_SAVE_KEY = 'YouJumpIJump_SaveData_Final'; 
+        
         let playerData = {
             highScore: 0, coins: 0, extraLives: 0,
             unlockedChars: ['default'], selectedChar: 'default',
-            unlockedAccs: [], equippedAccs: [], // Array for stackable accessories
-            controlMethod: 'touch', 
-            gyroSensitivity: 5    
+            unlockedAccs: ['none'], selectedAccs: [], 
+            controlMethod: 'touch',  // 預設為觸控
+            gyroSensitivity: 5.0,    // 陀螺儀預設靈敏度 5.0
+            touchSensitivity: 1.0    // 觸控預設靈敏度 1.0
         };
 
+        function migrateOldSaves() {
+            let totalCoins = 0;
+            let bestScore = 0;
+            let totalLives = 0;
+            let mergedChars = new Set();
+            let mergedAccs = new Set();
+            let oldSavesFound = false;
+
+            // 尋找舊版紀錄 v1 至 v10
+            for(let i=1; i<=10; i++) {
+                let key = 'YouJumpIJump_SaveData_v' + i;
+                let dataStr = localStorage.getItem(key);
+                if (dataStr) {
+                    oldSavesFound = true;
+                    try {
+                        let data = JSON.parse(dataStr);
+                        if (data.coins) totalCoins += data.coins;
+                        if (data.highScore > bestScore) bestScore = data.highScore;
+                        if (data.extraLives) totalLives += data.extraLives;
+                        if (data.unlockedChars) data.unlockedChars.forEach(c => mergedChars.add(c));
+                        if (data.unlockedAccs) data.unlockedAccs.forEach(c => mergedAccs.add(c));
+                        if (data.selectedAccs) data.selectedAccs.forEach(c => mergedAccs.add(c));
+                    } catch(e) {}
+                    // 剷除舊資料，保持整潔
+                    localStorage.removeItem(key); 
+                }
+            }
+
+            // 如果有舊紀錄，自動加總到 Final Key
+            if (oldSavesFound) {
+                let finalDataStr = localStorage.getItem(FINAL_SAVE_KEY);
+                let finalData = finalDataStr ? JSON.parse(finalDataStr) : {};
+                
+                finalData.coins = (finalData.coins || 0) + totalCoins;
+                finalData.highScore = Math.max(finalData.highScore || 0, bestScore);
+                finalData.extraLives = (finalData.extraLives || 0) + totalLives;
+                
+                finalData.unlockedChars = finalData.unlockedChars || ['default'];
+                mergedChars.forEach(c => { if (!finalData.unlockedChars.includes(c)) finalData.unlockedChars.push(c); });
+                
+                finalData.unlockedAccs = finalData.unlockedAccs || ['none'];
+                mergedAccs.forEach(c => { if (!finalData.unlockedAccs.includes(c)) finalData.unlockedAccs.push(c); });
+
+                localStorage.setItem(FINAL_SAVE_KEY, JSON.stringify(finalData));
+            }
+        }
+
         function loadPlayerData() {
+            migrateOldSaves(); // 載入前先執行轉移及大一統
             try {
-                const savedData = localStorage.getItem(SAVE_KEY);
+                const savedData = localStorage.getItem(FINAL_SAVE_KEY);
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
-                    // Migration for older saves to support array of accessories
-                    if (!parsed.equippedAccs) {
-                        parsed.equippedAccs = [];
-                        if (parsed.selectedAcc && parsed.selectedAcc !== 'none') {
-                            parsed.equippedAccs.push(parsed.selectedAcc);
-                            if (!parsed.unlockedAccs.includes(parsed.selectedAcc)) {
-                                parsed.unlockedAccs.push(parsed.selectedAcc);
-                            }
-                        }
-                    }
+                    // 防止舊存檔遺漏新屬性
+                    if (!parsed.selectedAccs) parsed.selectedAccs = (parsed.selectedAcc && parsed.selectedAcc !== 'none') ? [parsed.selectedAcc] : [];
+                    if (!parsed.controlMethod) parsed.controlMethod = 'touch';
+                    if (parsed.gyroSensitivity === undefined) parsed.gyroSensitivity = 5.0; 
+                    if (parsed.touchSensitivity === undefined) parsed.touchSensitivity = 1.0;
+                    
                     playerData = { ...playerData, ...parsed };
                 }
             } catch (e) { console.error("Error loading data:", e); }
@@ -260,7 +306,7 @@
         }
 
         function savePlayerData() {
-            try { localStorage.setItem(SAVE_KEY, JSON.stringify(playerData)); } 
+            try { localStorage.setItem(FINAL_SAVE_KEY, JSON.stringify(playerData)); } 
             catch (e) { console.error("Error saving data:", e); }
         }
 
@@ -282,7 +328,9 @@
             isDead: false,
             accCapActive: false,
             accGlovesActive: false,
-            accShoesActive: false
+            accShoesActive: false,
+            accGlassesActive: false,
+            accStarActive: false
         };
 
         const keys = { left: false, right: false };
@@ -298,20 +346,28 @@
         function updateSettingsUI() {
             const btnGyro = document.getElementById('ctrl-gyro');
             const btnTouch = document.getElementById('ctrl-touch');
-            const gyroSection = document.getElementById('gyro-settings');
+            const slider = document.getElementById('slider-sens');
+            const sensLabel = document.getElementById('sens-label');
             
             if (playerData.controlMethod === 'gyro') {
                 btnGyro.className = "flex-1 py-2 text-sm font-bold bg-blue-500 text-white rounded shadow transition-colors";
                 btnTouch.className = "flex-1 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors bg-transparent";
-                gyroSection.style.display = 'block';
+                if(sensLabel) sensLabel.innerText = i18n[currentLang].gyro_sens;
+                slider.min = "1.0";
+                slider.max = "10.0";
+                slider.step = "0.5";
+                slider.value = playerData.gyroSensitivity;
+                document.getElementById('sens-val').innerText = parseFloat(playerData.gyroSensitivity).toFixed(1) + 'x';
             } else {
                 btnTouch.className = "flex-1 py-2 text-sm font-bold bg-blue-500 text-white rounded shadow transition-colors";
                 btnGyro.className = "flex-1 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors bg-transparent";
-                gyroSection.style.display = 'none';
+                if(sensLabel) sensLabel.innerText = i18n[currentLang].touch_sens;
+                slider.min = "0.5";
+                slider.max = "5.0";
+                slider.step = "0.1";
+                slider.value = playerData.touchSensitivity;
+                document.getElementById('sens-val').innerText = parseFloat(playerData.touchSensitivity).toFixed(1) + 'x';
             }
-
-            document.getElementById('slider-sens').value = playerData.gyroSensitivity;
-            document.getElementById('sens-val').innerText = playerData.gyroSensitivity;
             updateLangUI(); 
         }
 
@@ -333,8 +389,13 @@
         });
 
         document.getElementById('slider-sens').addEventListener('input', (e) => {
-            playerData.gyroSensitivity = parseInt(e.target.value);
-            document.getElementById('sens-val').innerText = playerData.gyroSensitivity;
+            let val = parseFloat(e.target.value);
+            if (playerData.controlMethod === 'gyro') {
+                playerData.gyroSensitivity = val;
+            } else {
+                playerData.touchSensitivity = val;
+            }
+            document.getElementById('sens-val').innerText = val.toFixed(1) + 'x';
         });
 
         // --- Store UI Logic ---
@@ -375,9 +436,17 @@
 
             items.forEach(item => {
                 const isUnlocked = storeTab === 'chars' ? playerData.unlockedChars.includes(item.id) : playerData.unlockedAccs.includes(item.id);
-                const isSelected = storeTab === 'chars' ? playerData.selectedChar === item.id : playerData.equippedAccs.includes(item.id);
+                const isSelected = storeTab === 'chars' ? playerData.selectedChar === item.id : playerData.selectedAccs.includes(item.id);
                 
                 const btn = document.createElement('div');
+                if (item.id === 'none') {
+                    btn.className = `flex justify-between items-center p-3 rounded-xl border-2 transition-all border-gray-200 bg-red-50 hover:bg-red-100 cursor-pointer mb-2`;
+                    btn.innerHTML = `<div class="flex items-center w-full justify-center text-red-600 font-bold">${i18n[currentLang][item.nameKey]}</div>`;
+                    btn.onclick = () => window.equipItem(storeTab, item.id);
+                    container.appendChild(btn);
+                    return;
+                }
+
                 btn.className = `flex justify-between items-center p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'}`;
                 
                 let iconHtml = storeTab === 'chars' ? 
@@ -390,16 +459,14 @@
                 
                 let actionStr = '';
                 if (isSelected) { 
-                    if (storeTab === 'chars') {
-                        actionStr = `<span class="text-green-600 font-bold bg-green-200 px-3 py-1 rounded-full text-xs sm:text-sm">${i18n[currentLang].equipped}</span>`; 
-                    } else {
-                        actionStr = `<button class="bg-red-400 hover:bg-red-500 text-white px-4 py-1 rounded-full font-bold text-xs sm:text-sm" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].unequip}</button>`;
-                    }
+                    actionStr = `<button class="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow-sm flex-shrink-0" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].unequip}</button>`; 
                 } 
-                else if (isUnlocked) { actionStr = `<button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full font-bold text-xs sm:text-sm" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].equip}</button>`; } 
+                else if (isUnlocked) { 
+                    actionStr = `<button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full font-bold text-xs sm:text-sm shadow-sm flex-shrink-0" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].equip}</button>`; 
+                } 
                 else {
                     const canAfford = playerData.coins >= item.price;
-                    actionStr = `<button class="${canAfford ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} px-3 py-1 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap shadow-sm" ${canAfford ? `onclick="buyItem('${storeTab}', '${item.id}', ${item.price})"` : 'disabled'}>${i18n[currentLang].buy} ${item.price} 🪙</button>`;
+                    actionStr = `<button class="${canAfford ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} px-3 py-1 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap shadow-sm flex-shrink-0" ${canAfford ? `onclick="buyItem('${storeTab}', '${item.id}', ${item.price})"` : 'disabled'}>${i18n[currentLang].buy} ${item.price} 🪙</button>`;
                 }
 
                 btn.innerHTML = `<div class="flex items-center w-2/3">${iconHtml}${nameStr}</div>${actionStr}`;
@@ -411,11 +478,14 @@
             if (tab === 'chars') {
                 playerData.selectedChar = id; 
             } else {
-                // Stackable accessories logic
-                if (playerData.equippedAccs.includes(id)) {
-                    playerData.equippedAccs = playerData.equippedAccs.filter(acc => acc !== id);
+                if (id === 'none') {
+                    playerData.selectedAccs = []; 
                 } else {
-                    playerData.equippedAccs.push(id);
+                    if (playerData.selectedAccs.includes(id)) {
+                        playerData.selectedAccs = playerData.selectedAccs.filter(acc => acc !== id);
+                    } else {
+                        playerData.selectedAccs.push(id);
+                    }
                 }
             }
             savePlayerData(); updateStoreUI(); 
@@ -424,7 +494,7 @@
             if (playerData.coins >= price) {
                 playerData.coins -= price;
                 if (tab === 'chars') { playerData.unlockedChars.push(id); playerData.selectedChar = id; }
-                else { playerData.unlockedAccs.push(id); playerData.equippedAccs.push(id); }
+                else { playerData.unlockedAccs.push(id); playerData.selectedAccs.push(id); }
                 savePlayerData(); updateStoreUI();
             }
         };
@@ -490,13 +560,17 @@
             if (playerData.controlMethod !== 'gyro') { tiltActive = false; tiltVx = 0; return; }
             let gamma = event.gamma; if (gamma === null) return; tiltActive = true;
             
-            // Map 1-10 sensitivity: 5 is base (1.0x). 10 is fast (2.0x). 1 is slow (0.2x).
-            let multiplier = playerData.gyroSensitivity / 5.0; 
-            gamma = gamma * multiplier;
+            let sens = parseFloat(playerData.gyroSensitivity) || 5.0;
+            let rawGamma = gamma;
+            if (rawGamma > 45) rawGamma = 45; 
+            if (rawGamma < -45) rawGamma = -45;
+            if (Math.abs(rawGamma) < 1.5) rawGamma = 0; 
             
-            if (gamma > 35) gamma = 35; if (gamma < -35) gamma = -35;
-            if (Math.abs(gamma) < 2.0) gamma = 0; 
-            tiltVx = (gamma / 35) * player.speed;
+            let targetVx = (rawGamma / 30) * player.speed * sens;
+            if (targetVx > 22) targetVx = 22;
+            if (targetVx < -22) targetVx = -22;
+            
+            tiltVx = targetVx;
         }
 
         async function requestGyroPermission() {
@@ -665,10 +739,11 @@
             player.activePowerUp = null; player.powerUpTimer = 0; player.powerUpMaxTimer = 180;
             player.invincible = 0; player.jumpPower = -11; player.isDead = false;
             
-            // Stackable Accessories Initialization
-            player.accCapActive = playerData.equippedAccs.includes('cap');
-            player.accGlovesActive = playerData.equippedAccs.includes('gloves');
-            player.accShoesActive = playerData.equippedAccs.includes('shoes');
+            player.accCapActive = playerData.selectedAccs.includes('cap');
+            player.accGlovesActive = playerData.selectedAccs.includes('gloves');
+            player.accShoesActive = playerData.selectedAccs.includes('shoes');
+            player.accGlassesActive = playerData.selectedAccs.includes('glasses');
+            player.accStarActive = playerData.selectedAccs.includes('star');
 
             for(let i=0; i<25; i++) decorations.push({ x: Math.random() * CW, y: Math.random() * CH, size: Math.random() * 2 + 1, speedY: Math.random() * 0.5 + 0.2 });
             platforms.push(new Platform(player.x - 15, 580, 0)); 
@@ -686,15 +761,20 @@
             if (spawnSpringNext && type === 0) { p.itemType = 1; spawnSpringNext = false; } 
             else if (type === 0) { 
                 let roll = Math.random();
-                if (roll < 0.05) p.itemType = 5; // 5% chance at ANY score
-                else if (score > 50 && roll < 0.07) { // 2% Bomb chance
+                
+                // 生命值：5%
+                if (roll < 0.05) { 
+                    p.itemType = 5; 
+                } 
+                // 炸彈：2% 且 > 50分
+                else if (score > 50 && roll < 0.07) { 
                     p.itemType = 4;
                     let safeX = x > CW/2 ? x - 80 - Math.random()*50 : x + 80 + Math.random()*50;
                     if (safeX < 0) safeX = 10; if (safeX > CW - 60) safeX = CW - 70;
                     platforms.push(new Platform(safeX, yLevel + (Math.random()*20 - 10), 0));
                 }
-                else if (roll < 0.10) p.itemType = 3; // 3% Rocket
-                else if (roll < 0.15) p.itemType = 2; // 5% Shoes
+                else if (roll < 0.10) { p.itemType = 3; }
+                else if (roll < 0.15) { p.itemType = 2; } 
             }
             platforms.push(p);
             if (score > 20 && Math.random() < 0.1) enemies.push(new Enemy(Math.random() * (CW - 40), yLevel - 50, level));
@@ -715,8 +795,7 @@
             if (player.activePowerUp === 'rocket' || player.invincible > 0 || state === 'DYING' || state === 'REVIVE') return; 
             player.lives--;
             if (player.lives <= 0) { 
-                state = 'REVIVE';
-                switchState('REVIVE');
+                state = 'REVIVE'; switchState('REVIVE');
             } 
             else { 
                 player.vy = -18; player.invincible = 90; 
@@ -762,7 +841,6 @@
             if (player.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5;
 
             const selected = CHARACTERS.find(c => c.id === playerData.selectedChar) || CHARACTERS[0];
-            const accs = playerData.equippedAccs;
             if (Math.abs(player.vx) > 0.1) player.lastDir = player.vx > 0 ? 1 : -1;
             let dir = player.lastDir; let isJumping = player.vy < 0;
             const hasLegs = !['ghost', 'slime'].includes(selected.id);
@@ -779,16 +857,18 @@
                 ctx.strokeStyle = selected.color; ctx.lineWidth = 4; ctx.lineCap = 'round'; const legXs = [-10, -3, 4, 11];
                 for (let i = 0; i < 4; i++) {
                     ctx.beginPath(); ctx.moveTo(legXs[i], player.height/2 - 4);
+                    
                     let targetY = isJumping ? player.height/2 + 2 : player.height/2 + 10; 
                     let targetX = isJumping ? legXs[i] + (i - 1.5) * 4 : legXs[i];
                     
                     if (player.isDead) { targetY = player.height/2 - 6; targetX = legXs[i] + (i - 1.5) * 10; }
+
                     ctx.lineTo(targetX, targetY); ctx.stroke();
-                    
                     if (player.activePowerUp === 'shoes' && !player.isDead) {
                         ctx.fillStyle = '#9ca3af'; ctx.fillRect(targetX - 3, targetY, 6, 4);
                         ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(targetX-2, targetY+4); ctx.lineTo(targetX+2, targetY+6); ctx.lineTo(targetX-2, targetY+8); ctx.stroke();
                     }
+                    
                     if (player.accShoesActive && !player.isDead && player.activePowerUp !== 'shoes') {
                         ctx.fillStyle = '#ef4444'; ctx.fillRect(targetX - 4, targetY - 2, 8, 4);
                         ctx.fillStyle = 'white'; ctx.fillRect(targetX + (dir===1? 2:-4), targetY - 2, 2, 4);
@@ -804,8 +884,10 @@
                 ctx.beginPath(); ctx.roundRect(-player.width/2, -player.height/2, player.width, player.height, 10); ctx.fill(); 
                 if (selected.id === 'astronaut') {
                     ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.fillStyle = '#38bdf8'; ctx.fillRect(dir === 1 ? 2 : -12, -8, 10, 10);
-                    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(dir === 1 ? 4 : -10, -6, 3, 3);
+                    ctx.fillStyle = '#38bdf8'; 
+                    ctx.fillRect(dir === 1 ? 2 : -12, -8, 10, 10);
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)'; 
+                    ctx.fillRect(dir === 1 ? 4 : -10, -6, 3, 3);
                 }
             }
 
@@ -815,18 +897,18 @@
             if (selected.id === 'cyborg') { ctx.fillStyle = '#94a3b8'; ctx.fillRect(dir === 1 ? -15 : 0, -15, 15, 15); }
             if (selected.id === 'gold') { ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(-10, -15); ctx.lineTo(10, -15); ctx.lineTo(15, -25); ctx.lineTo(5, -15); ctx.lineTo(0, -25); ctx.lineTo(-5, -15); ctx.lineTo(-15, -25); ctx.closePath(); ctx.fill(); }
 
-            // Stackable Accessories Rendering
             if (player.accCapActive) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(0, -15, 12, Math.PI, 0); ctx.fill(); ctx.fillRect(dir === 1 ? 0 : -15, -15, 15, 3); } 
-            
-            if (accs.includes('star')) { ctx.fillStyle = '#facc15'; let sx = dir === 1 ? -12 : 12; ctx.beginPath(); ctx.moveTo(sx, -18); ctx.lineTo(sx+3, -12); ctx.lineTo(sx+9, -12); ctx.lineTo(sx+4, -8); ctx.lineTo(sx+6, -2); ctx.lineTo(sx, -6); ctx.lineTo(sx-6, -2); ctx.lineTo(sx-4, -8); ctx.lineTo(sx-9, -12); ctx.lineTo(sx-3, -12); ctx.closePath(); ctx.fill(); }
+            if (player.accStarActive) { ctx.fillStyle = '#facc15'; let sx = dir === 1 ? -8 : 8; ctx.beginPath(); ctx.moveTo(sx, -18); ctx.lineTo(sx+3, -12); ctx.lineTo(sx+9, -12); ctx.lineTo(sx+4, -8); ctx.lineTo(sx+6, -2); ctx.lineTo(sx, -6); ctx.lineTo(sx-6, -2); ctx.lineTo(sx-4, -8); ctx.lineTo(sx-9, -12); ctx.lineTo(sx-3, -12); ctx.closePath(); ctx.fill(); }
 
             ctx.fillStyle = 'white'; let eyeOffsetX = dir === 1 ? 4 : -10; if (player.shootTimer > 0 && !player.isDead) eyeOffsetX = -3; 
             
-            if (accs.includes('glasses') && !player.isDead) {
+            if (player.accGlassesActive && !player.isDead) {
                 ctx.fillStyle = '#111827'; ctx.fillRect(-6 + eyeOffsetX, -8, 8, 6); ctx.fillRect(2 + eyeOffsetX, -8, 8, 6); ctx.fillRect(-2 + eyeOffsetX, -6, 8, 2); 
                 ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(-4 + eyeOffsetX, -7, 2, 4); ctx.fillRect(4 + eyeOffsetX, -7, 2, 4);
             } else if (selected.id !== 'astronaut') {
-                ctx.fillStyle = 'white'; ctx.fillRect(-4 + eyeOffsetX, -8, 6, 8); if (selected.id !== 'cyborg') ctx.fillRect(4 + eyeOffsetX, -8, 6, 8);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(-4 + eyeOffsetX, -8, 6, 8); if (selected.id !== 'cyborg') ctx.fillRect(4 + eyeOffsetX, -8, 6, 8);
+                
                 if (player.isDead) {
                     ctx.strokeStyle = 'black'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.beginPath();
                     ctx.moveTo(-3 + eyeOffsetX, -7); ctx.lineTo(-1 + eyeOffsetX, -3); ctx.moveTo(-1 + eyeOffsetX, -7); ctx.lineTo(-3 + eyeOffsetX, -3);
@@ -845,7 +927,10 @@
                  ctx.stroke();
             }
 
-            if (player.accGlovesActive && hasLegs && !player.isDead) { ctx.fillStyle = 'white'; if (player.shootTimer > 0) ctx.fillRect(-4, -20, 8, 4); else ctx.fillRect(dir === 1 ? 15 : -20, -5, 5, 10); }
+            if (player.accGlovesActive && hasLegs && !player.isDead) { 
+                ctx.fillStyle = 'white'; 
+                if (player.shootTimer > 0) ctx.fillRect(-4, -20, 8, 4); else ctx.fillRect(dir === 1 ? 15 : -20, -5, 5, 10); 
+            }
 
             if (player.powerUpTimer > 0 && !player.isDead) {
                 ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.fillRect(-15, -35, 30, 4);
@@ -922,7 +1007,7 @@
 
         function drawFloatingTexts() {
             for (let ft of floatingTexts) {
-                ctx.save(); ctx.globalAlpha = ft.alpha; ctx.fillStyle = '#eab308'; ctx.font = 'bold 20px "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                ctx.save(); ctx.globalAlpha = ft.alpha; ctx.fillStyle = '#eab308'; ctx.font = 'bold 24px "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
                 ctx.strokeText(ft.text, ft.x, ft.y); ctx.fillText(ft.text, ft.x, ft.y); ctx.restore();
             }
         }
@@ -1004,15 +1089,22 @@
                 player.vy += player.gravity; if (player.vy > player.maxFallSpeed) player.vy = player.maxFallSpeed;
             }
 
+            // Apply selected control method
             if (playerData.controlMethod === 'gyro' && tiltActive && tiltVx !== 0) {
                 player.vx = tiltVx;
             } else if (playerData.controlMethod === 'touch' && touchX !== null) {
-                if (touchX < CW / 2) player.vx = -player.speed;
-                else player.vx = player.speed;
+                let sens = parseFloat(playerData.touchSensitivity) || 1.0;
+                let currentTouchSpeed = player.speed * sens;
+                if (currentTouchSpeed > 25) currentTouchSpeed = 25; 
+                
+                if (touchX < CW / 2) player.vx = -currentTouchSpeed;
+                else player.vx = currentTouchSpeed;
             } else if (keys.left) {
-                player.vx = -player.speed;
+                let sens = parseFloat(playerData.touchSensitivity) || 1.0;
+                player.vx = -player.speed * sens;
             } else if (keys.right) {
-                player.vx = player.speed;
+                let sens = parseFloat(playerData.touchSensitivity) || 1.0;
+                player.vx = player.speed * sens;
             } else { 
                 player.vx *= 0.8; if (Math.abs(player.vx) < 0.1) player.vx = 0; 
             }
