@@ -316,9 +316,19 @@
         const CW = 400; const CH = 600; 
 
         let state = 'MENU'; 
-        let score = 0; let level = 0;
+        
+        // 分數與層數系統
+        let score = 0; 
+        let floorsPassed = 0; 
+        let currentStageLevel = 0; 
+        let bonusDmg = 0; // 擊殺大佬後嘅額外攻擊力
+
         let platforms = []; let enemies = []; let projectiles = []; let decorations = []; let floatingTexts = []; let invincibilityStars = [];
         let spawnSpringNext = false; let animationId;
+        
+        // --- BOSS 變數 ---
+        let boss = null;
+        let nextBossFloor = 100; // 第一隻大佬喺第100層出
 
         let player = {
             x: 185, y: 300, width: 30, height: 30, vx: 0, vy: 0,
@@ -330,7 +340,9 @@
             accGlovesActive: false,
             accShoesActive: false,
             accGlassesActive: false,
-            accStarActive: false
+            accStarActive: false,
+            // Squash & Stretch 物理屬性
+            scaleX: 1.0, scaleY: 1.0, scaleVx: 0, scaleVy: 0
         };
 
         const keys = { left: false, right: false };
@@ -500,18 +512,27 @@
         };
 
         // --- Game Logic ---
-        function getEnemyKillScore() { return 5 + Math.floor(score / 50) * 5; }
+        function getEnemyKillScore() { 
+            return 5 + currentStageLevel * 2; 
+        }
 
         function shoot() {
             if (state !== 'PLAYING' || player.weaponCooldown > 0 || player.activePowerUp === 'rocket') return;
             const selected = CHARACTERS.find(c => c.id === playerData.selectedChar) || CHARACTERS[0];
             let targetEnemy = null; let minDist = Infinity;
-            for (let e of enemies) {
-                if (!e.dead && e.y > 0 && e.y < CH) {
-                    let dist = Math.hypot((e.x + e.width/2) - (player.x + player.width/2), (e.y + e.height/2) - player.y);
-                    if (dist < minDist) { minDist = dist; targetEnemy = e; }
+            
+            // 優先瞄準大佬
+            if (boss && !boss.dead) {
+                targetEnemy = boss;
+            } else {
+                for (let e of enemies) {
+                    if (!e.dead && e.y > 0 && e.y < CH) {
+                        let dist = Math.hypot((e.x + e.width/2) - (player.x + player.width/2), (e.y + e.height/2) - player.y);
+                        if (dist < minDist) { minDist = dist; targetEnemy = e; }
+                    }
                 }
             }
+
             player.weaponCooldown = targetEnemy ? selected.cooldown * 0.5 : selected.cooldown;
             let vx = 0; let vy = -selected.speed;
             if (targetEnemy) {
@@ -521,10 +542,32 @@
                 vx = Math.cos(angle) * selected.speed; vy = Math.sin(angle) * selected.speed;
                 if (vy > -2) vy = -2;
             }
-            projectiles.push({ x: player.x + player.width / 2, y: player.y, vx: vx, vy: vy, dead: false, weapon: selected, target: targetEnemy });
+            
+            // 基礎攻擊力 + 額外獎勵攻擊力
+            let totalDmg = selected.dmg + bonusDmg;
+            
+            projectiles.push({ 
+                x: player.x + player.width / 2, 
+                y: player.y, 
+                vx: vx, 
+                vy: vy, 
+                dead: false, 
+                weapon: { ...selected, dmg: totalDmg }, // 複製並覆蓋攻擊力
+                target: targetEnemy, 
+                isEnemy: false 
+            });
             player.shootTimer = 15;
             
-            if (selected.id === 'flyer' && player.activePowerUp !== 'rocket') player.vy = player.jumpPower * 0.9;
+            if (selected.id === 'flyer' && player.activePowerUp !== 'rocket') doJump(player.jumpPower * 0.9);
+        }
+
+        // --- 核心動態彈跳 (Squash & Stretch) 觸發函數 ---
+        function doJump(power) {
+            player.vy = power;
+            let isSlime = (playerData.selectedChar === 'slime');
+            let squish = isSlime ? 0.6 : 0.25; // 史萊姆壓得特別扁
+            player.scaleX = 1.0 + squish; 
+            player.scaleY = 1.0 - squish; 
         }
 
         window.addEventListener('keydown', e => {
@@ -596,7 +639,7 @@
                 document.getElementById('main-menu').classList.remove('hidden');
                 document.getElementById('btn-lang').classList.remove('hidden');
                 document.getElementById('btn-settings-toggle').classList.remove('hidden');
-                drawStaticBackground(0); player.x = CW/2 - player.width/2; player.y = 400; player.vy = 0; drawPlayer();
+                drawStaticBackground(0); player.x = CW/2 - player.width/2; player.y = 400; player.vy = 0; player.scaleX = 1; player.scaleY = 1; drawPlayer();
             } else if (state === 'STORE') {
                 document.getElementById('store-menu').classList.remove('hidden'); updateStoreUI();
             } else if (state === 'PLAYING') {
@@ -641,12 +684,12 @@
         });
         document.getElementById('btn-revive-skip').addEventListener('click', () => {
             document.getElementById('revive-menu').classList.add('hidden');
-            state = 'DYING'; player.isDead = true; player.vx = 0; player.y = CH + player.height; player.vy = -18; requestAnimationFrame(gameLoop); 
+            state = 'DYING'; player.isDead = true; player.vx = 0; player.y = CH + player.height; doJump(-18); requestAnimationFrame(gameLoop); 
         });
 
         function executeRevive() {
             document.getElementById('revive-menu').classList.add('hidden');
-            player.lives = 1; player.vy = -22; player.invincible = 120; 
+            player.lives = 1; doJump(-22); player.invincible = 120; 
             if (player.y > CH) { player.y = CH / 2; player.x = CW / 2 - player.width / 2; platforms.push(new Platform(CW/2 - 30, CH/2 + 50, 0)); }
             state = 'PLAYING'; updateHUD(); requestAnimationFrame(gameLoop);
         }
@@ -716,10 +759,14 @@
         }
 
         class Enemy {
-            constructor(x, y, currentLevel) {
+            constructor(x, y) {
                 this.x = x; this.y = y; this.width = 40; this.height = 30; this.dead = false;
-                this.type = Math.floor(Math.random() * 2); this.vx = this.type === 1 ? (Math.random() > 0.5 ? 1 : -1) : 0;
-                this.maxHp = 2 + (currentLevel * 2); this.hp = this.maxHp;
+                this.type = Math.floor(Math.random() * 2); 
+                this.vx = this.type === 1 ? (Math.random() > 0.5 ? 1 : -1) : 0;
+                
+                // 普通怪血量隨機為 2 或 4
+                this.maxHp = Math.random() > 0.5 ? 2 : 4; 
+                this.hp = this.maxHp;
             }
         }
 
@@ -732,12 +779,20 @@
         }
 
         function resetGame() {
-            score = 0; level = 0; platforms = []; enemies = []; projectiles = []; decorations = []; floatingTexts = []; invincibilityStars = [];
+            score = 0; 
+            floorsPassed = 0; 
+            currentStageLevel = 0; 
+            bonusDmg = 0; // 重置額外攻擊力
+            
+            platforms = []; enemies = []; projectiles = []; decorations = []; floatingTexts = []; invincibilityStars = [];
             spawnSpringNext = false; tiltVx = 0; touchX = null;
+            boss = null; nextBossFloor = 100;
+            
             player.x = CW / 2 - player.width / 2; player.y = 400; player.vy = 0; player.vx = 0; player.lastDir = 1; 
             player.shootTimer = 0; player.weaponCooldown = 0; player.lives = 1; 
             player.activePowerUp = null; player.powerUpTimer = 0; player.powerUpMaxTimer = 180;
             player.invincible = 0; player.jumpPower = -11; player.isDead = false;
+            player.scaleX = 1.0; player.scaleY = 1.0; player.scaleVx = 0; player.scaleVy = 0;
             
             player.accCapActive = playerData.selectedAccs.includes('cap');
             player.accGlovesActive = playerData.selectedAccs.includes('gloves');
@@ -753,21 +808,18 @@
 
         function spawnPlatform(yLevel) {
             let x = Math.random() * (CW - 60); let type = 0;
-            if (score > 40 && Math.random() < 0.2) type = 1; 
-            else if (score > 80 && Math.random() < 0.2) type = 2; 
-            else if (score > 120 && Math.random() < 0.15) type = 3; 
+            
+            // 難度根據真實層數 (floorsPassed) 調整
+            if (floorsPassed > 40 && Math.random() < 0.2) type = 1; 
+            else if (floorsPassed > 80 && Math.random() < 0.2) type = 2; 
+            else if (floorsPassed > 120 && Math.random() < 0.15) type = 3; 
             
             let p = new Platform(x, yLevel, type);
             if (spawnSpringNext && type === 0) { p.itemType = 1; spawnSpringNext = false; } 
             else if (type === 0) { 
                 let roll = Math.random();
-                
-                // 生命值：5%
-                if (roll < 0.05) { 
-                    p.itemType = 5; 
-                } 
-                // 炸彈：2% 且 > 50分
-                else if (score > 50 && roll < 0.07) { 
+                if (roll < 0.05) { p.itemType = 5; } 
+                else if (floorsPassed > 50 && roll < 0.07) { 
                     p.itemType = 4;
                     let safeX = x > CW/2 ? x - 80 - Math.random()*50 : x + 80 + Math.random()*50;
                     if (safeX < 0) safeX = 10; if (safeX > CW - 60) safeX = CW - 70;
@@ -777,7 +829,71 @@
                 else if (roll < 0.15) { p.itemType = 2; } 
             }
             platforms.push(p);
-            if (score > 20 && Math.random() < 0.1) enemies.push(new Enemy(Math.random() * (CW - 40), yLevel - 50, level));
+            
+            // 降低普通怪生成機率 (原為 0.1，現為 0.01)
+            if (floorsPassed > 20 && Math.random() < 0.01) enemies.push(new Enemy(Math.random() * (CW - 40), yLevel - 50));
+        }
+
+        // --- 生成百層大佬 ---
+        function spawnBoss() {
+            let actualLevel = currentStageLevel === 0 ? 1 : currentStageLevel;
+            
+            // 【難度大幅削弱】：第 1 隻大佬得 5 滴血，之後每隻多 5 滴血
+            let newBossHp = 5 + (actualLevel - 1) * 5; 
+            
+            boss = {
+                x: CW / 2 - 40,
+                y: -100, // 從天而降
+                width: 80,
+                height: 80,
+                maxHp: newBossHp,
+                hp: newBossHp,
+                vx: 2 + actualLevel * 0.5,
+                vy: 0,
+                shootTimer: 300, // 第1次發射會等好耐 (大約 5 秒)
+                dead: false,
+                color: ['#dc2626', '#9333ea', '#ea580c', '#2563eb'][actualLevel % 4]
+            };
+            
+            // 建立大佬競技場 (保證玩家唔會隨機跌死)
+            let arenaY = player.y > CH/2 ? player.y + 100 : CH - 50;
+            if (arenaY > CH - 50) arenaY = CH - 50;
+            
+            platforms.push(new Platform(CW/2 - 30, arenaY, 0));
+            platforms.push(new Platform(20, arenaY - 80, 0));
+            platforms.push(new Platform(CW - 80, arenaY - 80, 0));
+            platforms.push(new Platform(CW/2 - 30, arenaY - 160, 1)); // 中間一塊識郁嘅
+            
+            spawnScoreText(CW/2, CH/2, "⚠️ BOSS APPROACHING ⚠️");
+        }
+
+        // --- 擊敗大佬並修正下個大佬生成時機 ---
+        function killBoss() {
+            boss.dead = true;
+            
+            // 獎勵金幣及分數
+            let coinReward = 50 + currentStageLevel * 20;
+            score += 50; 
+            playerData.coins += coinReward; 
+            
+            // 擊敗大佬永久增加本局攻擊力
+            bonusDmg += 2;
+            
+            updateHUD();
+            
+            // 精確設定下一個大佬觸發層數 (例如打完 100 層，下隻就是 200 層)
+            nextBossFloor += 100;
+            
+            spawnScoreText(boss.x + boss.width/2, boss.y, `大佬KO！攻擊力+2！`);
+            for(let i=0; i<30; i++) invincibilityStars.push(new InvincibilityStar(boss.x+boss.width/2, boss.y+boss.height/2));
+            
+            // 擊殺後生成一條新道路畀玩家繼續上
+            let startY = boss.y;
+            platforms.push(new Platform(CW/2 - 30, startY + 80, 0)); 
+            platforms.push(new Platform(CW/2 - 80, startY + 10, 0));
+            platforms.push(new Platform(CW/2 + 20, startY - 60, 0));
+            
+            boss = null;
         }
 
         function activatePowerUp(type) {
@@ -798,7 +914,7 @@
                 state = 'REVIVE'; switchState('REVIVE');
             } 
             else { 
-                player.vy = -18; player.invincible = 90; 
+                doJump(-18); player.invincible = 90; 
                 if (player.y > CH) { player.y = CH / 2; player.x = CW / 2 - player.width / 2; platforms.push(new Platform(CW/2 - 30, CH/2 + 50, 0)); } 
                 updateHUD(); 
             }
@@ -817,27 +933,44 @@
         }
 
         // --- Rendering ---
-        function drawStaticBackground(overrideLevel) {
-            let activeLevel = overrideLevel !== undefined ? overrideLevel : level;
-            if (activeLevel === 0) { ctx.fillStyle = '#f0fdf4'; ctx.fillRect(0, 0, CW, CH); ctx.strokeStyle = '#dcfce7'; ctx.lineWidth = 1; for(let i=0; i<CW; i+=20) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,CH); ctx.stroke(); } for(let i=0; i<CH; i+=20) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(CW,i); ctx.stroke(); } } 
-            else if (activeLevel === 1) { ctx.fillStyle = '#e0f2fe'; ctx.fillRect(0, 0, CW, CH); } 
-            else if (activeLevel === 2) { ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, CW, CH); } 
+        function drawStaticBackground() {
+            let stageIdx = currentStageLevel % 4;
+            
+            // 畫背景色
+            if (stageIdx === 0) { ctx.fillStyle = '#f0fdf4'; ctx.fillRect(0, 0, CW, CH); ctx.strokeStyle = '#dcfce7'; ctx.lineWidth = 1; for(let i=0; i<CW; i+=20) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,CH); ctx.stroke(); } for(let i=0; i<CH; i+=20) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(CW,i); ctx.stroke(); } } 
+            else if (stageIdx === 1) { ctx.fillStyle = '#e0f2fe'; ctx.fillRect(0, 0, CW, CH); } 
+            else if (stageIdx === 2) { ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, CW, CH); } 
             else { ctx.fillStyle = '#450a0a'; ctx.fillRect(0, 0, CW, CH); }
+
+            // 畫出巨大嘅背景層數浮水印
+            ctx.save();
+            ctx.fillStyle = (stageIdx === 2 || stageIdx === 3) ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+            ctx.font = '900 100px "Segoe UI", sans-serif'; // 字體縮細至 100px
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(floorsPassed + "F", CW / 2, CH / 2 + 50); // 移除數字與 F 之間嘅空格
+            ctx.restore();
         }
 
         function drawDecorations() {
+            let stageIdx = currentStageLevel % 4;
             for (let d of decorations) {
                 ctx.save(); ctx.translate(d.x, d.y);
-                if (level === 0) { ctx.fillStyle = '#86efac'; ctx.beginPath(); ctx.moveTo(0, 10); ctx.quadraticCurveTo(2, 0, 4, 10); ctx.moveTo(3, 10); ctx.quadraticCurveTo(6, -5, 8, 10); ctx.moveTo(6, 10); ctx.quadraticCurveTo(10, 2, 12, 10); ctx.fill(); } 
-                else if (level === 1) { ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; ctx.beginPath(); ctx.arc(0, 0, d.size * 6, 0, Math.PI*2); ctx.arc(d.size * 5, -d.size * 3, d.size * 5, 0, Math.PI*2); ctx.arc(d.size * 10, 0, d.size * 6, 0, Math.PI*2); ctx.fill(); } 
-                else if (level === 2) { ctx.fillStyle = 'rgba(255, 255, 255, ' + (Math.random()*0.5 + 0.5) + ')'; ctx.beginPath(); ctx.arc(0, 0, d.size, 0, Math.PI*2); ctx.fill(); } 
-                else if (level === 3) { ctx.fillStyle = Math.random() > 0.5 ? '#f97316' : '#facc15'; ctx.globalAlpha = Math.random() * 0.5 + 0.5; ctx.fillRect(0, 0, d.size * 2, d.size * 2); }
+                if (stageIdx === 0) { ctx.fillStyle = '#86efac'; ctx.beginPath(); ctx.moveTo(0, 10); ctx.quadraticCurveTo(2, 0, 4, 10); ctx.moveTo(3, 10); ctx.quadraticCurveTo(6, -5, 8, 10); ctx.moveTo(6, 10); ctx.quadraticCurveTo(10, 2, 12, 10); ctx.fill(); } 
+                else if (stageIdx === 1) { ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; ctx.beginPath(); ctx.arc(0, 0, d.size * 6, 0, Math.PI*2); ctx.arc(d.size * 5, -d.size * 3, d.size * 5, 0, Math.PI*2); ctx.arc(d.size * 10, 0, d.size * 6, 0, Math.PI*2); ctx.fill(); } 
+                else if (stageIdx === 2) { ctx.fillStyle = 'rgba(255, 255, 255, ' + (Math.random()*0.5 + 0.5) + ')'; ctx.beginPath(); ctx.arc(0, 0, d.size, 0, Math.PI*2); ctx.fill(); } 
+                else if (stageIdx === 3) { ctx.fillStyle = Math.random() > 0.5 ? '#f97316' : '#facc15'; ctx.globalAlpha = Math.random() * 0.5 + 0.5; ctx.fillRect(0, 0, d.size * 2, d.size * 2); }
                 ctx.restore();
             }
         }
 
         function drawPlayer() {
-            ctx.save(); ctx.translate(player.x + player.width/2, player.y + player.height/2);
+            ctx.save(); 
+            // 為咗 Squash & Stretch 從底部進行縮放
+            ctx.translate(player.x + player.width/2, player.y + player.height);
+            ctx.scale(player.scaleX, player.scaleY);
+            ctx.translate(0, -player.height/2); // 變回以中心繪製
+
             if (player.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5;
 
             const selected = CHARACTERS.find(c => c.id === playerData.selectedChar) || CHARACTERS[0];
@@ -939,6 +1072,44 @@
             ctx.restore();
         }
 
+        function drawBoss() {
+            if (!boss || boss.dead) return;
+            ctx.save();
+            ctx.translate(boss.x + boss.width/2, boss.y + boss.height/2);
+
+            let wobble = Math.sin(Date.now() / 150) * 5;
+            ctx.rotate(wobble * Math.PI / 180);
+
+            // 身體
+            ctx.fillStyle = boss.color;
+            ctx.beginPath(); ctx.roundRect(-boss.width/2, -boss.height/2, boss.width, boss.height, 15); ctx.fill();
+
+            // 王冠
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(-25, -boss.height/2); ctx.lineTo(-35, -boss.height/2 - 25);
+            ctx.lineTo(-12, -boss.height/2 - 10); ctx.lineTo(0, -boss.height/2 - 30);
+            ctx.lineTo(12, -boss.height/2 - 10); ctx.lineTo(35, -boss.height/2 - 25);
+            ctx.lineTo(25, -boss.height/2); ctx.fill();
+
+            // 眼睛
+            ctx.fillStyle = 'white'; ctx.fillRect(-25, -15, 20, 20); ctx.fillRect(5, -15, 20, 20);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(-15, -8, 10, 10); ctx.fillRect(5, -8, 10, 10);
+
+            // 憤怒眉毛
+            ctx.fillStyle = '#111827';
+            ctx.beginPath(); ctx.moveTo(-30, -20); ctx.lineTo(-5, -5); ctx.lineTo(-5, -10); ctx.lineTo(-30, -25); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(30, -20); ctx.lineTo(5, -5); ctx.lineTo(5, -10); ctx.lineTo(30, -25); ctx.fill();
+
+            // 血條
+            let hpPct = Math.max(0, boss.hp / boss.maxHp);
+            ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(-boss.width/2, -boss.height/2 - 40, boss.width, 8);
+            ctx.fillStyle = '#ef4444'; ctx.fillRect(-boss.width/2 + 1, -boss.height/2 - 39, boss.width - 2, 6);
+            ctx.fillStyle = '#22c55e'; ctx.fillRect(-boss.width/2 + 1, -boss.height/2 - 39, (boss.width - 2) * hpPct, 6);
+
+            ctx.restore();
+        }
+
         function drawPlatformsAndItems() {
             for (let p of platforms) {
                 if (p.broken && p.brokenTimer > 0) continue;
@@ -993,7 +1164,12 @@
             for (let p of projectiles) {
                 if (p.dead) continue;
                 ctx.save(); ctx.translate(p.x, p.y);
-                if (p.weapon.type === 'shuriken') { p.rot = (p.rot || 0) + 0.3; ctx.rotate(p.rot); ctx.fillStyle = '#4b5563'; ctx.fillRect(-6, -2, 12, 4); ctx.fillRect(-2, -6, 4, 12); } 
+                
+                if (p.weapon.type === 'boss_fire') {
+                    ctx.fillStyle = '#ea580c'; ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.arc(0, 2, 4, 0, Math.PI*2); ctx.fill();
+                }
+                else if (p.weapon.type === 'shuriken') { p.rot = (p.rot || 0) + 0.3; ctx.rotate(p.rot); ctx.fillStyle = '#4b5563'; ctx.fillRect(-6, -2, 12, 4); ctx.fillRect(-2, -6, 4, 12); } 
                 else if (p.weapon.type === 'laser') { ctx.fillStyle = '#ef4444'; ctx.rotate(Math.atan2(p.vy, p.vx)); ctx.fillRect(-8, -2, 16, 4); } 
                 else if (p.weapon.type === 'heart') { ctx.fillStyle = '#ec4899'; ctx.beginPath(); ctx.moveTo(0, 3); ctx.bezierCurveTo(-5, -2, -5, -6, 0, -5); ctx.bezierCurveTo(5, -6, 5, -2, 0, 3); ctx.fill(); } 
                 else if (p.weapon.type === 'acid') { ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI*2); ctx.fill(); } 
@@ -1035,7 +1211,7 @@
                 invincibilityStars = invincibilityStars.filter(s => s.alpha > 0);
 
                 ctx.clearRect(0, 0, CW, CH);
-                drawStaticBackground(); drawDecorations(); drawPlatformsAndItems(); drawEnemies(); drawProjectiles(); drawPlayer(); drawInvincibilityStars(); drawFloatingTexts(); 
+                drawStaticBackground(); drawDecorations(); drawPlatformsAndItems(); drawEnemies(); drawBoss(); drawProjectiles(); drawPlayer(); drawInvincibilityStars(); drawFloatingTexts(); 
 
                 if (player.vy >= 0) {
                     if (score > playerData.highScore) playerData.highScore = score; 
@@ -1048,6 +1224,15 @@
             }
 
             // --- 正常遊玩邏輯區 ---
+            
+            // Squash & Stretch 物理更新
+            player.scaleVx += (1.0 - player.scaleX) * 0.3; // 彈力係數
+            player.scaleVy += (1.0 - player.scaleY) * 0.3;
+            player.scaleVx *= 0.75; // 阻尼
+            player.scaleVy *= 0.75;
+            player.scaleX += player.scaleVx;
+            player.scaleY += player.scaleVy;
+
             if (player.shootTimer > 0) player.shootTimer--;
             if (player.weaponCooldown > 0) player.weaponCooldown--;
             if (player.invincible > 0) player.invincible--;
@@ -1065,10 +1250,11 @@
             for (let s of invincibilityStars) { s.x += s.vx; s.y += s.vy; s.alpha -= 0.05; }
             invincibilityStars = invincibilityStars.filter(s => s.alpha > 0);
 
-            if (enemies.some(e => !e.dead && e.y > 0 && e.y < CH)) shoot();
+            if (enemies.some(e => !e.dead && e.y > 0 && e.y < CH) || (boss && !boss.dead)) shoot();
 
             for (let d of decorations) {
-                if (level === 3) d.y -= d.speedY * 2; 
+                let stageIdx = currentStageLevel % 4;
+                if (stageIdx === 3) d.y -= d.speedY * 2; 
                 if (d.y > CH + 50) { d.y = -50; d.x = Math.random() * CW; } else if (d.y < -50) { d.y = CH + 50; d.x = Math.random() * CW; }
             }
 
@@ -1112,11 +1298,105 @@
             player.x += player.vx; player.y += player.vy;
             if (player.x + player.width < 0) player.x = CW; else if (player.x > CW) player.x = -player.width;
 
+            // --- 防治打大佬時飛出天花板 ---
+            if (boss && !boss.dead && player.y < 0) {
+                player.y = 0;
+                if (player.vy < 0) player.vy = 0; // 撞到天花板反彈或者停止
+                if (player.activePowerUp === 'rocket') {
+                    // 如果係火箭飛過龍，強制解除，等玩家跌返落去打大佬
+                    player.activePowerUp = null;
+                    player.powerUpTimer = 0;
+                }
+            }
+
+            // --- BOSS 更新邏輯 ---
+            if (boss && !boss.dead) {
+                if (boss.y < 50) boss.y += 2; // 入場
+                boss.x += boss.vx;
+                if (boss.x < 0 || boss.x + boss.width > CW) boss.vx *= -1;
+
+                boss.shootTimer--;
+                if (boss.shootTimer <= 0) {
+                    // 【難度大幅削弱】：發射速度減慢 10 倍
+                    let actualLevel = currentStageLevel === 0 ? 1 : currentStageLevel;
+                    boss.shootTimer = Math.max(200, 600 - actualLevel * 50);
+                    
+                    let dx = (player.x + player.width/2) - (boss.x + boss.width/2);
+                    let dy = (player.y + player.height/2) - (boss.y + boss.height);
+                    let dist = Math.hypot(dx, dy) || 1;
+                    
+                    // 子彈飛行速度都減慢少少
+                    let speed = 2 + (actualLevel % 2);
+                    projectiles.push({
+                        x: boss.x + boss.width/2,
+                        y: boss.y + boss.height,
+                        vx: (dx/dist)*speed,
+                        vy: (dy/dist)*speed,
+                        dead: false,
+                        isEnemy: true,
+                        weapon: { type: 'boss_fire', dmg: 1 }
+                    });
+                }
+
+                // 玩家與大佬嘅碰撞 (踩 vs 受傷 vs 火箭)
+                if (player.x + player.width > boss.x && player.x < boss.x + boss.width && player.y + player.height > boss.y && player.y < boss.y + boss.height) {
+                    
+                    if (player.activePowerUp === 'rocket') {
+                        // 火箭直衝大佬：造成大傷害、反彈並解除火箭狀態
+                        boss.hp -= 20;
+                        doJump(player.jumpPower * 1.2); 
+                        player.activePowerUp = null; 
+                        player.powerUpTimer = 0;
+                        player.invincible = 60; // 防止撞完即刻扣血
+                        spawnScoreText(boss.x + boss.width/2, boss.y, `火箭重擊! -20`);
+                    } 
+                    else if (player.vy > 0 && player.y + player.height - player.vy <= boss.y + 30) {
+                        // 正常由上面踩落去
+                        boss.hp -= 10;
+                        doJump(player.jumpPower * 1.5); // 超大回彈
+                        spawnScoreText(boss.x + boss.width/2, boss.y, `-10`);
+                    } 
+                    else if (player.accCapActive) {
+                        // 裝備咗紅帽，擋一次傷並造成少少反傷
+                        player.accCapActive = false;
+                        boss.hp -= 5;
+                        doJump(player.jumpPower);
+                        player.invincible = 60;
+                        spawnScoreText(boss.x + boss.width/2, boss.y, `-5`);
+                    } 
+                    else if (player.invincible > 0) {
+                        // 無敵狀態下碰到 (例如復活後)
+                        if (player.vy > 0) {
+                            boss.hp -= 5;
+                            doJump(player.jumpPower);
+                            spawnScoreText(boss.x + boss.width/2, boss.y, `-5`);
+                        } else {
+                            player.vy = Math.abs(player.jumpPower) * 0.5; // 撞到底部彈返落去，避免卡實
+                        }
+                    } 
+                    else {
+                        takeDamage();
+                    }
+
+                    if (boss.hp <= 0) killBoss();
+                }
+            }
+
             for (let p of projectiles) {
-                if (p.weapon.homing && p.target && !p.target.dead) {
-                    let dx = (p.target.x + p.target.width/2) - p.x; let dy = (p.target.y + p.target.height/2) - p.y; let angle = Math.atan2(dy, dx);
-                    p.vx += (Math.cos(angle) * p.weapon.speed - p.vx) * p.weapon.homingStrength;
-                    p.vy += (Math.sin(angle) * p.weapon.speed - p.vy) * p.weapon.homingStrength;
+                if (p.isEnemy) {
+                    if (!p.dead && player.x + player.width > p.x - 5 && player.x < p.x + 5 && player.y + player.height > p.y - 5 && player.y < p.y + 5) {
+                        if (player.activePowerUp === 'rocket' || player.invincible > 0 || player.accGlovesActive) {
+                            p.dead = true;
+                            if (player.accGlovesActive && !player.invincible) player.accGlovesActive = false;
+                        } else { p.dead = true; takeDamage(); }
+                    }
+                } else {
+                    let target = p.weapon.homing ? ((boss && !boss.dead) ? boss : p.target) : null;
+                    if (target && !target.dead) {
+                        let dx = (target.x + target.width/2) - p.x; let dy = (target.y + target.height/2) - p.y; let angle = Math.atan2(dy, dx);
+                        p.vx += (Math.cos(angle) * p.weapon.speed - p.vx) * p.weapon.homingStrength;
+                        p.vy += (Math.sin(angle) * p.weapon.speed - p.vy) * p.weapon.homingStrength;
+                    }
                 }
                 p.x += p.vx; p.y += p.vy;
             }
@@ -1124,7 +1404,8 @@
 
             for (let e of enemies) { if (e.type === 1 && !e.dead) { e.x += e.vx; if (e.x < 0 || e.x + e.width > CW) e.vx *= -1; } }
 
-            if (player.y < CH / 2) {
+            // --- 畫面向上捲動 (大佬期間會鎖定) ---
+            if (player.y < CH / 2 && !boss) {
                 let diff = CH / 2 - player.y; player.y = CH / 2;
                 for (let d of decorations) d.y += diff * 0.4;
                 for (let ft of floatingTexts) ft.y += diff; 
@@ -1133,10 +1414,24 @@
                 for (let p of platforms) {
                     p.y += diff;
                     if (p.y > CH && !p.scored) {
-                        p.scored = true; score++; playerData.coins++;
-                        if (score > 0 && score % 20 === 0) spawnSpringNext = true;
-                        let newLevel = Math.floor(score / 100); if (newLevel !== level) level = newLevel;
+                        
+                        // 修正分數，每一層加1分
+                        p.scored = true; 
+                        score++;               // 每過一塊板加1分
+                        floorsPassed++;        // 層數加1
+                        playerData.coins++;    // 金幣加1
+                        
+                        if (floorsPassed > 0 && floorsPassed % 20 === 0) spawnSpringNext = true;
+                        
+                        // 根據層數更新背景級別 (每100層轉一次景)
+                        currentStageLevel = Math.floor(floorsPassed / 100);
+                        
                         updateHUD();
+                        
+                        // 檢查大佬生成條件
+                        if (floorsPassed >= nextBossFloor && !boss) {
+                            spawnBoss();
+                        }
                     }
                 }
                 platforms = platforms.filter(p => p.y < CH + 50);
@@ -1144,20 +1439,33 @@
                 
                 let minY = Math.min(...platforms.map(p => p.y));
                 while (minY > -20) { 
-                    let gap = Math.random() * 40 + Math.min(score/3, 50) + 20; 
+                    // 難度隨住層數增加而變難
+                    let gap = Math.random() * 40 + Math.min(floorsPassed / 3, 50) + 20; 
                     minY -= gap; 
                     spawnPlatform(minY); 
                 }
             }
 
             for (let proj of projectiles) {
+                if (proj.isEnemy) continue;
+                
+                // 子彈打大佬
+                if (boss && !boss.dead && !proj.dead && proj.x > boss.x && proj.x < boss.x + boss.width && proj.y > boss.y && proj.y < boss.y + boss.height) {
+                    boss.hp -= proj.weapon.dmg; proj.dead = true;
+                    if (boss.hp <= 0) killBoss();
+                }
+
+                // 子彈打細怪
                 for (let e of enemies) {
                     if (!e.dead && !proj.dead && proj.x > e.x && proj.x < e.x + e.width && proj.y > e.y && proj.y < e.y + e.height) {
                         e.hp -= proj.weapon.dmg; proj.dead = true;
                         if (e.hp <= 0) { 
                             e.dead = true; 
                             let pts = getEnemyKillScore();
-                            score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`); 
+                            score += pts; 
+                            playerData.coins += 2; // 打死怪固定送2個金幣
+                            updateHUD(); 
+                            spawnScoreText(e.x + e.width/2, e.y, `+${pts}`); 
                         }
                     }
                 }
@@ -1173,11 +1481,11 @@
                             if (player.activePowerUp === 'rocket' || player.invincible > 0) {
                                 p.itemType = 0; 
                                 let pts = getEnemyKillScore();
-                                score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(ix+10, iy, `+${pts}`); 
+                                score += pts; playerData.coins += 3; updateHUD(); spawnScoreText(ix+10, iy, `+${pts}`); 
                             } else if (player.accGlovesActive) {
                                 player.accGlovesActive = false; p.itemType = 0; 
                                 let pts = getEnemyKillScore();
-                                score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(ix+10, iy, `+${pts}`);
+                                score += pts; playerData.coins += 3; updateHUD(); spawnScoreText(ix+10, iy, `+${pts}`);
                             } else { takeDamage(); }
                         } else if (p.itemType === 5) { if (player.lives < 3) { player.lives++; updateHUD(); } }
                         
@@ -1192,19 +1500,19 @@
                     if (player.activePowerUp === 'rocket' || player.invincible > 0) { 
                         e.hp = 0; e.dead = true; 
                         let pts = getEnemyKillScore();
-                        score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`);
+                        score += pts; playerData.coins += 2; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`);
                     } 
                     else if (player.accCapActive) {
-                        player.accCapActive = false; e.hp = 0; e.dead = true; player.vy = player.jumpPower; 
+                        player.accCapActive = false; e.hp = 0; e.dead = true; doJump(player.jumpPower); 
                         let pts = getEnemyKillScore();
-                        score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`);
+                        score += pts; playerData.coins += 2; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`);
                     }
                     else if (player.vy > 0 && player.y + player.height - player.vy <= e.y + 15) { 
-                        e.hp -= 5; player.vy = player.jumpPower; 
+                        e.hp -= 5; doJump(player.jumpPower); 
                         if (e.hp <= 0) { 
                             e.dead = true; 
                             let pts = getEnemyKillScore();
-                            score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`); 
+                            score += pts; playerData.coins += 2; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`); 
                         }
                     } 
                     else { takeDamage(); }
@@ -1214,17 +1522,18 @@
             if (player.vy > 0 && player.activePowerUp !== 'rocket') { 
                 for (let p of platforms) {
                     if (!p.broken && player.x + player.width > p.x && player.x < p.x + p.width && player.y + player.height > p.y && player.y + player.height - player.vy <= p.y + 12) { 
-                        if (p.type === 2) { p.broken = true; p.brokenTimer = 90; player.vy = player.jumpPower; } 
-                        else if (p.type === 3) { p.crackLevel++; player.vy = player.jumpPower; if (p.crackLevel >= 3) { p.broken = true; p.brokenTimer = 90; } } 
-                        else { player.vy = player.jumpPower; if (p.itemType === 1 && player.x + player.width/2 > p.x + p.width/2 - 12 && player.x + player.width/2 < p.x + p.width/2 + 12) { player.vy = player.springPower; } }
+                        if (p.type === 2) { p.broken = true; p.brokenTimer = 90; doJump(player.jumpPower); } 
+                        else if (p.type === 3) { p.crackLevel++; doJump(player.jumpPower); if (p.crackLevel >= 3) { p.broken = true; p.brokenTimer = 90; } } 
+                        else { doJump(player.jumpPower); if (p.itemType === 1 && player.x + player.width/2 > p.x + p.width/2 - 12 && player.x + player.width/2 < p.x + p.width/2 + 12) { doJump(player.springPower); } }
                     }
                 }
             }
 
+            // 大佬戰時如果有安全底層托住，跌落去就真係死
             if (player.y > CH) takeDamage();
 
             ctx.clearRect(0, 0, CW, CH);
-            drawStaticBackground(); drawDecorations(); drawPlatformsAndItems(); drawEnemies(); drawProjectiles(); drawPlayer(); drawInvincibilityStars(); drawFloatingTexts(); 
+            drawStaticBackground(); drawDecorations(); drawPlatformsAndItems(); drawEnemies(); drawBoss(); drawProjectiles(); drawPlayer(); drawInvincibilityStars(); drawFloatingTexts(); 
 
             if (state === 'PLAYING' || state === 'DYING') {
                 animationId = requestAnimationFrame(gameLoop);
