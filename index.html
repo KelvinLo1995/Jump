@@ -13,9 +13,16 @@
         
         /* 隱藏原生滑動列預設樣式並自訂 */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -7px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #e2e8f0; border-radius: 3px; }
         input[type=range]:focus { outline: none; }
+        
+        /* 超強文字邊框 */
+        .text-outline { text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
+        
+        /* 齒輪動畫 */
+        @keyframes spin-slow { 100% { transform: rotate(360deg); } }
+        .hover-spin:hover svg { animation: spin-slow 3s linear infinite; }
     </style>
 </head>
 <body class="w-screen h-screen flex items-center justify-center relative select-none">
@@ -31,20 +38,24 @@
             🌐 EN / 中
         </button>
 
-        <!-- Settings Toggle Button (Main Menu only) -->
-        <button id="btn-settings-toggle" class="hidden pointer-events-auto absolute top-4 right-4 bg-white/80 backdrop-blur text-gray-700 w-8 h-8 rounded-full text-lg font-bold shadow-md border border-gray-200 hover:bg-gray-100 transition-colors z-20 flex items-center justify-center">
-            ⚙️
+        <!-- Q版設定按鈕 (巨大化、黃色立體) -->
+        <button id="btn-settings-toggle" class="hidden hover-spin pointer-events-auto absolute top-3 right-4 bg-yellow-400 hover:bg-yellow-300 w-12 h-12 rounded-full shadow-[0_4px_0_#ca8a04] active:shadow-[0_0px_0_#ca8a04] active:translate-y-1 transition-all z-20 flex items-center justify-center border-2 border-white">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7 text-white drop-shadow-md">
+                <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a9.53 9.53 0 00-1.864 1.076c-.153.115-.3.11-.412.036L4.79 5.282c-.81-.545-1.924-.29-2.405.57l-1.157 2c-.48.86-.243 1.956.544 2.502l1.583 1.096c.11.076.16.195.16.32v.458c0 .125-.05.244-.16.32l-1.583 1.096c-.787.546-1.024 1.642-.544 2.502l1.157 2c.48.86 1.594 1.115 2.405.57l1.688-1.135c.112-.074.259-.079.412.036.59.447 1.21.84 1.864 1.076.182.088.277.228.297.348l.178 1.072c.151.904.933 1.567 1.85 1.567h2.314c.917 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.115-.26.297-.348.654-.236 1.274-.63 1.864-1.076.153-.115.3-.11.412-.036l1.688 1.135c.81.545 1.924.29 2.405-.57l1.157-2c.48-.86.243-1.956-.544-2.502l-1.583-1.096c-.11-.076-.16-.195-.16-.32v-.458c0-.125.05-.244.16-.32l1.583-1.096c.787-.546 1.024-1.642.544-2.502l-1.157-2c-.48-.86-1.594-1.115-2.405-.57l-1.688 1.135c-.112.074-.259.079-.412-.036-.59-.447-1.21-.84-1.864-1.076-.182-.088-.277-.228-.297-.348l-.178-1.072c-.151-.904-.933-1.567-1.85-1.567h-2.314zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clip-rule="evenodd" />
+            </svg>
         </button>
 
-        <!-- HUD -->
+        <!-- HUD (優化高對比顯示) -->
         <div id="hud" class="hidden absolute top-0 left-0 w-full max-w-md mx-auto h-full pointer-events-none flex-col justify-start p-4 z-10">
-            <div class="flex justify-between items-start text-xl font-bold drop-shadow-md w-full">
-                <div class="text-left text-black transition-colors flex flex-col" id="hud-left">
-                    <span><span data-i18n="score">Score</span>: <span id="hud-score">0</span></span>
-                    <span id="hud-lives" class="text-red-500 text-lg tracking-widest mt-1">❤️</span>
+            <div class="flex justify-between items-start w-full">
+                <!-- 左側分數與 Q 版生命值 -->
+                <div class="text-left text-white flex flex-col text-outline drop-shadow-md" id="hud-left">
+                    <span class="text-2xl font-extrabold tracking-wide"><span data-i18n="score">Score</span>: <span id="hud-score">0</span></span>
+                    <span id="hud-lives" class="flex mt-1 items-center"></span>
                 </div>
-                <div class="text-right text-yellow-500" id="hud-right">
-                    <span data-i18n="coins">Coins</span>: <span id="hud-coins">0</span>
+                <!-- 右側金幣 -->
+                <div class="text-right text-yellow-400 flex flex-col text-outline drop-shadow-md" id="hud-right">
+                    <span class="text-2xl font-extrabold tracking-wide"><span data-i18n="coins">Coins</span>: <span id="hud-coins">0</span></span>
                 </div>
             </div>
         </div>
@@ -64,9 +75,9 @@
             <div id="gyro-settings" class="mb-6 text-left hidden">
                 <div class="flex justify-between items-end mb-2">
                     <p class="font-bold text-gray-700 text-sm" data-i18n="gyro_sens">Gyro Sensitivity:</p>
-                    <span id="sens-val" class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">1.0x</span>
+                    <span id="sens-val" class="text-xs font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">5</span>
                 </div>
-                <input type="range" id="slider-sens" min="0.5" max="5.0" step="0.1" value="1.0" class="w-full">
+                <input type="range" id="slider-sens" min="1" max="10" step="1" value="5" class="w-full">
                 <div class="flex justify-between text-xs text-gray-400 mt-1 font-semibold">
                     <span data-i18n="sens_low">Slow</span>
                     <span data-i18n="sens_high">Fast</span>
@@ -89,8 +100,7 @@
             <h2 class="text-3xl font-extrabold mb-1 text-gray-800" data-i18n="store_title">Store</h2>
             <p class="text-yellow-500 font-bold mb-3 text-lg"><span data-i18n="your_coins">Your Coins</span>: <span id="store-coins">0</span></p>
             
-            <!-- Extra Life Purchase Section -->
-            <div class="flex justify-between items-center bg-blue-50 border border-blue-200 p-3 rounded-xl mb-3 shadow-sm">
+            <div class="flex justify-between items-center bg-blue-50 border border-blue-200 p-3 rounded-xl mb-3 shadow-sm flex-shrink-0">
                 <div class="text-left flex flex-col">
                     <span class="font-bold text-blue-800 text-sm sm:text-base" data-i18n="store_extra_life">Extra Life 💖</span>
                     <span class="text-xs text-blue-600 font-semibold"><span data-i18n="owned">Owned: </span><span id="store-lives-count">0</span></span>
@@ -100,13 +110,14 @@
                 </button>
             </div>
 
-            <div class="flex bg-gray-200 rounded-lg p-1 mb-3">
+            <div class="flex bg-gray-200 rounded-lg p-1 mb-3 flex-shrink-0">
                 <button id="tab-chars" class="flex-1 py-1 text-sm font-bold bg-white rounded shadow text-purple-600" data-i18n="tab_chars">Characters</button>
                 <button id="tab-accs" class="flex-1 py-1 text-sm font-bold text-gray-500 hover:text-gray-700" data-i18n="tab_accs">Accessories</button>
             </div>
 
-            <div id="store-items" class="flex flex-col gap-3 mb-4 overflow-y-auto flex-grow p-1"></div>
-            <button id="btn-store-back" class="bg-gray-500 text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-600 w-full shadow-lg transform active:scale-95 transition-transform mt-2" data-i18n="back">Back to Menu</button>
+            <div id="store-items" class="flex flex-col gap-3 mb-4 overflow-y-auto flex-grow p-1 min-h-0"></div>
+            
+            <button id="btn-store-back" class="bg-gray-500 text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-600 w-full shadow-lg transform active:scale-95 transition-transform mt-2 flex-shrink-0" data-i18n="back">Back to Menu</button>
         </div>
 
         <!-- Revive Prompt Menu -->
@@ -148,7 +159,7 @@
                 play: "Play Game", store_btn: "Store",
                 score: "Score", coins: "Coins", store_title: "Store", your_coins: "Your Coins",
                 back: "Back to Menu", game_over: "Game Over!", best: "Best", play_again: "Play Again", main_menu: "Main Menu",
-                tab_chars: "Characters", tab_accs: "Accessories", equipped: "Equipped", equip: "Equip", buy: "Buy",
+                tab_chars: "Characters", tab_accs: "Accessories", equipped: "Equipped", equip: "Equip", unequip: "Unequip", buy: "Buy",
                 share: "Share Score", share_text: "I scored {score} points in You Jump I Jump! Can you beat me?",
                 store_extra_life: "Extra Life 💖", owned: "Owned: ", revive_title: "Revive?", revive_desc: "You fell! Spend 1000 coins to revive?",
                 btn_use_life: "Use Extra Life", btn_buy_life: "Buy Revive (1000 🪙)", btn_skip_revive: "Skip & End Game",
@@ -157,14 +168,14 @@
                 w_pellet: "Pellets (1 DMG)", w_orb: "Orbs (2 DMG)", w_shuriken: "Shurikens (2 DMG)", w_acid: "Acid (4 DMG)",
                 w_heart: "Homing Hearts (2 DMG)", w_laser: "Auto-Lasers (3 DMG)", w_gold: "Homing Gold (5 DMG)", w_wind: "Wind Gusts (3 DMG)", w_plasma: "Plasma (4 DMG, Fast)",
                 c_alien: "Green Alien", c_ghost: "Spooky Ghost", c_ninja: "Ninja", c_slime: "Sludge Slime", c_pinky: "Pinky", c_cyborg: "Cyborg", c_gold: "Golden King", c_flyer: "Super Fly", c_astronaut: "Astronaut (Rocket 5s)",
-                a_none: "No Accessory", a_cap: "Red Cap (1 Enemy Shield)", a_glasses: "Sunglasses (Cool)", a_star: "Star Clip (Cute)", a_gloves: "White Gloves (1 Bomb Shield)", a_shoes: "Sports Shoes (Springs 5s)"
+                a_cap: "Red Cap (1 Enemy Shield)", a_glasses: "Sunglasses (Cool)", a_star: "Star Clip (Cute)", a_gloves: "White Gloves (1 Bomb Shield)", a_shoes: "Sports Shoes (Springs 5s)"
             },
             zh: {
                 title: "You Jump I Jump", subtitle_gyro: "傾斜手機移動，自動瞄準射擊！", subtitle_touch: "點擊左右移動，自動瞄準射擊！", 
                 play: "開始遊戲", store_btn: "商店",
                 score: "分數", coins: "金幣", store_title: "商店", your_coins: "你的金幣",
                 back: "返回主選單", game_over: "遊戲結束！", best: "最高分", play_again: "再玩一次", main_menu: "返回主選單",
-                tab_chars: "角色", tab_accs: "飾品", equipped: "已裝備", equip: "裝備", buy: "購買",
+                tab_chars: "角色", tab_accs: "飾品", equipped: "已裝備", equip: "裝備", unequip: "卸下", buy: "購買",
                 share: "分享分數", share_text: "我在 You Jump I Jump 拿了 {score} 分！你能打敗我嗎？",
                 store_extra_life: "後備生命 💖", owned: "擁有: ", revive_title: "復活繼續？", revive_desc: "跌親添！要唔要用 1000 金幣復活繼續破紀錄？",
                 btn_use_life: "使用後備生命", btn_buy_life: "購買復活 (1000 🪙)", btn_skip_revive: "放棄並結算",
@@ -173,7 +184,7 @@
                 w_pellet: "小豆豆 (1 傷害)", w_orb: "幽靈光球 (2 傷害)", w_shuriken: "高速飛鏢 (2 傷害)", w_acid: "強酸液 (4 傷害)",
                 w_heart: "追蹤愛心 (2 傷害)", w_laser: "自動雷射 (3 傷害)", w_gold: "追蹤金幣 (5 傷害)", w_wind: "風刃 (3 傷害)", w_plasma: "等離子炮 (4 傷害)",
                 c_alien: "綠色外星人", c_ghost: "幽靈", c_ninja: "忍者", c_slime: "史萊姆", c_pinky: "粉紅甜心", c_cyborg: "生化人", c_gold: "黃金國王", c_flyer: "飛行俠 (可飛)", c_astronaut: "太空人 (火箭 5秒)",
-                a_none: "無飾品", a_cap: "紅帽子 (擋 1 次敵人)", a_glasses: "太陽眼鏡 (純粹有型)", a_star: "星星髮夾 (純粹可愛)", a_gloves: "白手套 (擋 1 次炸彈)", a_shoes: "運動鞋 (跳跳鞋 5秒)"
+                a_cap: "紅帽子 (擋 1 次敵人)", a_glasses: "太陽眼鏡 (純粹有型)", a_star: "星星髮夾 (純粹可愛)", a_gloves: "白手套 (擋 1 次炸彈)", a_shoes: "運動鞋 (跳跳鞋 5秒)"
             }
         };
         let currentLang = 'zh';
@@ -183,10 +194,8 @@
                 const key = el.getAttribute('data-i18n');
                 if (i18n[currentLang][key]) el.innerText = i18n[currentLang][key];
             });
-            // Update subtitle based on control setting
             const subKey = playerData.controlMethod === 'touch' ? 'subtitle_touch' : 'subtitle_gyro';
             document.getElementById('menu-subtitle').innerText = i18n[currentLang][subKey];
-            
             if (state === 'STORE') updateStoreUI();
         }
 
@@ -209,7 +218,6 @@
         ];
 
         const ACCESSORIES = [
-            { id: 'none', nameKey: 'a_none', price: 0, icon: '🚫' },
             { id: 'cap', nameKey: 'a_cap', price: 100, icon: '🧢' },
             { id: 'glasses', nameKey: 'a_glasses', price: 150, icon: '🕶️' },
             { id: 'star', nameKey: 'a_star', price: 200, icon: '⭐' },
@@ -220,14 +228,13 @@
         let storeTab = 'chars'; 
 
         // --- Local Storage Setup ---
-        const SAVE_KEY = 'YouJumpIJump_SaveData_v3'; // Bumped version
+        const SAVE_KEY = 'YouJumpIJump_SaveData_v5';
         let playerData = {
             highScore: 0, coins: 0, extraLives: 0,
             unlockedChars: ['default'], selectedChar: 'default',
-            unlockedAccs: ['none'], selectedAcc: 'none',
-            // Default to touch, and sensitivity to 1.0 (though it goes up to 5.0)
+            unlockedAccs: [], equippedAccs: [], // Array for stackable accessories
             controlMethod: 'touch', 
-            gyroSensitivity: 1.0    
+            gyroSensitivity: 5    
         };
 
         function loadPlayerData() {
@@ -235,6 +242,16 @@
                 const savedData = localStorage.getItem(SAVE_KEY);
                 if (savedData) {
                     const parsed = JSON.parse(savedData);
+                    // Migration for older saves to support array of accessories
+                    if (!parsed.equippedAccs) {
+                        parsed.equippedAccs = [];
+                        if (parsed.selectedAcc && parsed.selectedAcc !== 'none') {
+                            parsed.equippedAccs.push(parsed.selectedAcc);
+                            if (!parsed.unlockedAccs.includes(parsed.selectedAcc)) {
+                                parsed.unlockedAccs.push(parsed.selectedAcc);
+                            }
+                        }
+                    }
                     playerData = { ...playerData, ...parsed };
                 }
             } catch (e) { console.error("Error loading data:", e); }
@@ -271,8 +288,11 @@
         const keys = { left: false, right: false };
         let touchX = null; let tiltActive = false; let tiltVx = 0;
 
-        // Initialize save data right away
         loadPlayerData();
+
+        // --- Q 版心心 SVG ---
+        const svgHeartOn = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 inline-block mx-0.5" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.6));"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ff4757" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="7" cy="7" rx="2.5" ry="3.5" fill="#ffffff" transform="rotate(-45 7 7)" opacity="0.8"/></svg>`;
+        const svgHeartOff = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6 inline-block mx-0.5 opacity-60"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#9ca3af" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 
         // --- Settings UI Logic ---
         function updateSettingsUI() {
@@ -291,9 +311,8 @@
             }
 
             document.getElementById('slider-sens').value = playerData.gyroSensitivity;
-            document.getElementById('sens-val').innerText = parseFloat(playerData.gyroSensitivity).toFixed(1) + 'x';
-            
-            updateLangUI(); // Refresh subtitle
+            document.getElementById('sens-val').innerText = playerData.gyroSensitivity;
+            updateLangUI(); 
         }
 
         document.getElementById('btn-settings-toggle').addEventListener('click', () => {
@@ -306,19 +325,16 @@
         });
 
         document.getElementById('ctrl-gyro').addEventListener('click', () => {
-            playerData.controlMethod = 'gyro';
-            updateSettingsUI();
-            requestGyroPermission(); // Try requesting immediately when switched
+            playerData.controlMethod = 'gyro'; updateSettingsUI(); requestGyroPermission(); 
         });
 
         document.getElementById('ctrl-touch').addEventListener('click', () => {
-            playerData.controlMethod = 'touch';
-            updateSettingsUI();
+            playerData.controlMethod = 'touch'; updateSettingsUI();
         });
 
         document.getElementById('slider-sens').addEventListener('input', (e) => {
-            playerData.gyroSensitivity = parseFloat(e.target.value);
-            document.getElementById('sens-val').innerText = playerData.gyroSensitivity.toFixed(1) + 'x';
+            playerData.gyroSensitivity = parseInt(e.target.value);
+            document.getElementById('sens-val').innerText = playerData.gyroSensitivity;
         });
 
         // --- Store UI Logic ---
@@ -327,10 +343,8 @@
 
         window.buyExtraLife = function() {
             if (playerData.coins >= 1000) {
-                playerData.coins -= 1000;
-                playerData.extraLives++;
-                savePlayerData();
-                updateStoreUI();
+                playerData.coins -= 1000; playerData.extraLives++;
+                savePlayerData(); updateStoreUI();
             }
         };
 
@@ -347,11 +361,8 @@
                 btnBuyLife.disabled = true;
             }
 
-            const container = document.getElementById('store-items');
-            container.innerHTML = '';
-
-            const btnChars = document.getElementById('tab-chars');
-            const btnAccs = document.getElementById('tab-accs');
+            const container = document.getElementById('store-items'); container.innerHTML = '';
+            const btnChars = document.getElementById('tab-chars'); const btnAccs = document.getElementById('tab-accs');
             if (storeTab === 'chars') {
                 btnChars.className = "flex-1 py-1 text-sm font-bold bg-white rounded shadow text-purple-600";
                 btnAccs.className = "flex-1 py-1 text-sm font-bold text-gray-500 hover:text-gray-700";
@@ -364,7 +375,7 @@
 
             items.forEach(item => {
                 const isUnlocked = storeTab === 'chars' ? playerData.unlockedChars.includes(item.id) : playerData.unlockedAccs.includes(item.id);
-                const isSelected = storeTab === 'chars' ? playerData.selectedChar === item.id : playerData.selectedAcc === item.id;
+                const isSelected = storeTab === 'chars' ? playerData.selectedChar === item.id : playerData.equippedAccs.includes(item.id);
                 
                 const btn = document.createElement('div');
                 btn.className = `flex justify-between items-center p-3 rounded-xl border-2 transition-all ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'}`;
@@ -375,15 +386,18 @@
 
                 const nameText = i18n[currentLang][item.nameKey];
                 let descText = storeTab === 'chars' ? i18n[currentLang][item.weaponKey] : '';
-                
                 const nameStr = `<div class="flex flex-col text-left flex-grow"><span class="font-bold text-gray-800 text-sm sm:text-base">${nameText}</span><span class="text-xs text-gray-500 font-semibold">${descText}</span></div>`;
                 
                 let actionStr = '';
-                if (isSelected) {
-                    actionStr = `<span class="text-green-600 font-bold bg-green-200 px-3 py-1 rounded-full text-xs sm:text-sm">${i18n[currentLang].equipped}</span>`;
-                } else if (isUnlocked) {
-                    actionStr = `<button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full font-bold text-xs sm:text-sm" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].equip}</button>`;
-                } else {
+                if (isSelected) { 
+                    if (storeTab === 'chars') {
+                        actionStr = `<span class="text-green-600 font-bold bg-green-200 px-3 py-1 rounded-full text-xs sm:text-sm">${i18n[currentLang].equipped}</span>`; 
+                    } else {
+                        actionStr = `<button class="bg-red-400 hover:bg-red-500 text-white px-4 py-1 rounded-full font-bold text-xs sm:text-sm" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].unequip}</button>`;
+                    }
+                } 
+                else if (isUnlocked) { actionStr = `<button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full font-bold text-xs sm:text-sm" onclick="equipItem('${storeTab}', '${item.id}')">${i18n[currentLang].equip}</button>`; } 
+                else {
                     const canAfford = playerData.coins >= item.price;
                     actionStr = `<button class="${canAfford ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} px-3 py-1 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap shadow-sm" ${canAfford ? `onclick="buyItem('${storeTab}', '${item.id}', ${item.price})"` : 'disabled'}>${i18n[currentLang].buy} ${item.price} 🪙</button>`;
                 }
@@ -394,19 +408,30 @@
         }
 
         window.equipItem = function(tab, id) { 
-            if (tab === 'chars') playerData.selectedChar = id; else playerData.selectedAcc = id;
+            if (tab === 'chars') {
+                playerData.selectedChar = id; 
+            } else {
+                // Stackable accessories logic
+                if (playerData.equippedAccs.includes(id)) {
+                    playerData.equippedAccs = playerData.equippedAccs.filter(acc => acc !== id);
+                } else {
+                    playerData.equippedAccs.push(id);
+                }
+            }
             savePlayerData(); updateStoreUI(); 
         };
         window.buyItem = function(tab, id, price) {
             if (playerData.coins >= price) {
                 playerData.coins -= price;
                 if (tab === 'chars') { playerData.unlockedChars.push(id); playerData.selectedChar = id; }
-                else { playerData.unlockedAccs.push(id); playerData.selectedAcc = id; }
+                else { playerData.unlockedAccs.push(id); playerData.equippedAccs.push(id); }
                 savePlayerData(); updateStoreUI();
             }
         };
 
         // --- Game Logic ---
+        function getEnemyKillScore() { return 5 + Math.floor(score / 50) * 5; }
+
         function shoot() {
             if (state !== 'PLAYING' || player.weaponCooldown > 0 || player.activePowerUp === 'rocket') return;
             const selected = CHARACTERS.find(c => c.id === playerData.selectedChar) || CHARACTERS[0];
@@ -429,7 +454,6 @@
             projectiles.push({ x: player.x + player.width / 2, y: player.y, vx: vx, vy: vy, dead: false, weapon: selected, target: targetEnemy });
             player.shootTimer = 15;
             
-            // Only Flyer flies when shooting without rocket. Astronaut flies ONLY when having rocket powerup.
             if (selected.id === 'flyer' && player.activePowerUp !== 'rocket') player.vy = player.jumpPower * 0.9;
         }
 
@@ -443,69 +467,44 @@
             if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
         });
         canvas.addEventListener('mousedown', (e) => {
-            // Touch/Mouse controls implementation
             if (state === 'PLAYING' && playerData.controlMethod === 'touch') {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                touchX = (x / rect.width) * CW;
-            } else {
-                shoot();
-            }
+                const rect = canvas.getBoundingClientRect(); const x = e.clientX - rect.left; touchX = (x / rect.width) * CW;
+            } else { shoot(); }
         });
         canvas.addEventListener('mouseup', () => touchX = null);
 
         canvas.addEventListener('touchstart', e => { 
             if (state === 'PLAYING') e.preventDefault(); 
-            const rect = canvas.getBoundingClientRect(); 
-            const x = e.touches[0].clientX - rect.left;
-            
-            if (playerData.controlMethod === 'touch') {
-                touchX = (x / rect.width) * CW;
-            } else {
-                // In gyro mode, touching anywhere just shoots
-                shoot(); 
-            }
+            const rect = canvas.getBoundingClientRect(); const x = e.touches[0].clientX - rect.left;
+            if (playerData.controlMethod === 'touch') { touchX = (x / rect.width) * CW; } 
+            else { shoot(); }
         }, {passive: false});
         canvas.addEventListener('touchmove', e => { 
             if (playerData.controlMethod === 'touch' && state === 'PLAYING') {
-                const rect = canvas.getBoundingClientRect(); 
-                touchX = ((e.touches[0].clientX - rect.left) / rect.width) * CW; 
+                const rect = canvas.getBoundingClientRect(); touchX = ((e.touches[0].clientX - rect.left) / rect.width) * CW; 
             }
         });
         canvas.addEventListener('touchend', () => touchX = null);
 
         function handleOrientation(event) {
-            if (playerData.controlMethod !== 'gyro') {
-                tiltActive = false;
-                tiltVx = 0;
-                return;
-            }
-            let gamma = event.gamma; if (gamma === null) return; 
-            tiltActive = true;
+            if (playerData.controlMethod !== 'gyro') { tiltActive = false; tiltVx = 0; return; }
+            let gamma = event.gamma; if (gamma === null) return; tiltActive = true;
             
-            // Apply sensitivity multiplier
-            gamma = gamma * playerData.gyroSensitivity;
-
+            // Map 1-10 sensitivity: 5 is base (1.0x). 10 is fast (2.0x). 1 is slow (0.2x).
+            let multiplier = playerData.gyroSensitivity / 5.0; 
+            gamma = gamma * multiplier;
+            
             if (gamma > 35) gamma = 35; if (gamma < -35) gamma = -35;
-            if (Math.abs(gamma) < 2.0) gamma = 0; // Small deadzone
-            
+            if (Math.abs(gamma) < 2.0) gamma = 0; 
             tiltVx = (gamma / 35) * player.speed;
         }
 
         async function requestGyroPermission() {
-            if (playerData.controlMethod !== 'gyro') return; // Don't ask if not using it
-            
+            if (playerData.controlMethod !== 'gyro') return; 
             if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                try { 
-                    const permission = await DeviceOrientationEvent.requestPermission(); 
-                    if (permission === 'granted') {
-                        window.addEventListener('deviceorientation', handleOrientation); 
-                    }
-                } 
+                try { const permission = await DeviceOrientationEvent.requestPermission(); if (permission === 'granted') { window.addEventListener('deviceorientation', handleOrientation); } } 
                 catch (error) { console.log("Gyro permission rejected"); }
-            } else { 
-                window.addEventListener('deviceorientation', handleOrientation); 
-            }
+            } else { window.addEventListener('deviceorientation', handleOrientation); }
         }
 
         function switchState(newState) {
@@ -517,7 +516,7 @@
             document.getElementById('hud').classList.add('hidden');
             document.getElementById('btn-lang').classList.add('hidden');
             document.getElementById('btn-settings-toggle').classList.add('hidden');
-            document.getElementById('settings-menu').classList.add('hidden'); // Ensure settings close
+            document.getElementById('settings-menu').classList.add('hidden');
 
             if (state === 'MENU') {
                 document.getElementById('main-menu').classList.remove('hidden');
@@ -532,17 +531,13 @@
             } else if (state === 'REVIVE') {
                 document.getElementById('hud').classList.remove('hidden');
                 document.getElementById('revive-menu').classList.remove('hidden');
-                
                 const btnUse = document.getElementById('btn-revive-use');
                 const btnBuy = document.getElementById('btn-revive-buy');
                 
                 if (playerData.extraLives > 0) {
-                    btnUse.classList.remove('hidden');
-                    document.getElementById('revive-owned-count').innerText = playerData.extraLives;
-                    btnBuy.classList.add('hidden');
+                    btnUse.classList.remove('hidden'); document.getElementById('revive-owned-count').innerText = playerData.extraLives; btnBuy.classList.add('hidden');
                 } else {
-                    btnUse.classList.add('hidden');
-                    btnBuy.classList.remove('hidden');
+                    btnUse.classList.add('hidden'); btnBuy.classList.remove('hidden');
                     if (playerData.coins >= 1000) {
                         btnBuy.className = "bg-yellow-400 text-yellow-900 px-6 py-3 rounded-2xl text-lg font-bold hover:bg-yellow-500 w-full mb-3 shadow-lg transform active:scale-95 transition-transform";
                         btnBuy.disabled = false;
@@ -565,36 +560,21 @@
 
         // --- Revive Logic ---
         document.getElementById('btn-revive-use').addEventListener('click', () => {
-            if (playerData.extraLives > 0) {
-                playerData.extraLives--; savePlayerData();
-                executeRevive();
-            }
+            if (playerData.extraLives > 0) { playerData.extraLives--; savePlayerData(); executeRevive(); }
         });
         document.getElementById('btn-revive-buy').addEventListener('click', () => {
-            if (playerData.coins >= 1000) {
-                playerData.coins -= 1000; savePlayerData();
-                executeRevive();
-            }
+            if (playerData.coins >= 1000) { playerData.coins -= 1000; savePlayerData(); executeRevive(); }
         });
         document.getElementById('btn-revive-skip').addEventListener('click', () => {
             document.getElementById('revive-menu').classList.add('hidden');
-            state = 'DYING';
-            player.isDead = true;
-            player.vx = 0;
-            player.y = CH + player.height; 
-            player.vy = -18; 
-            requestAnimationFrame(gameLoop); 
+            state = 'DYING'; player.isDead = true; player.vx = 0; player.y = CH + player.height; player.vy = -18; requestAnimationFrame(gameLoop); 
         });
 
         function executeRevive() {
             document.getElementById('revive-menu').classList.add('hidden');
-            player.lives = 1;
-            player.vy = -22; 
-            player.invincible = 120; 
+            player.lives = 1; player.vy = -22; player.invincible = 120; 
             if (player.y > CH) { player.y = CH / 2; player.x = CW / 2 - player.width / 2; platforms.push(new Platform(CW/2 - 30, CH/2 + 50, 0)); }
-            state = 'PLAYING';
-            updateHUD();
-            requestAnimationFrame(gameLoop);
+            state = 'PLAYING'; updateHUD(); requestAnimationFrame(gameLoop);
         }
 
         // --- Share Image Generation Logic ---
@@ -604,18 +584,14 @@
             btn.innerHTML = '⏳...'; btn.disabled = true;
 
             try {
-                const shareCanvas = document.createElement('canvas');
-                shareCanvas.width = 1080; shareCanvas.height = 1620;
+                const shareCanvas = document.createElement('canvas'); shareCanvas.width = 1080; shareCanvas.height = 1620;
                 const sCtx = shareCanvas.getContext('2d');
 
                 sCtx.drawImage(canvas, 0, 0, 1080, 1620);
-                sCtx.fillStyle = 'rgba(17, 24, 39, 0.5)'; 
-                sCtx.fillRect(0, 0, 1080, 1620);
+                sCtx.fillStyle = 'rgba(17, 24, 39, 0.5)'; sCtx.fillRect(0, 0, 1080, 1620);
 
-                sCtx.textAlign = 'center'; 
-                sCtx.font = '900 100px "Segoe UI", sans-serif'; 
-                sCtx.lineWidth = 12; sCtx.strokeStyle = 'white';
-                sCtx.strokeText(i18n[currentLang].title, 540, 260);
+                sCtx.textAlign = 'center'; sCtx.font = '900 100px "Segoe UI", sans-serif'; 
+                sCtx.lineWidth = 12; sCtx.strokeStyle = 'white'; sCtx.strokeText(i18n[currentLang].title, 540, 260);
                 sCtx.fillStyle = '#10b981'; sCtx.fillText(i18n[currentLang].title, 540, 260);
 
                 const cardW = 460; const cardH = 380;
@@ -645,8 +621,7 @@
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try { await navigator.share(shareData); } catch (err) { console.log('Share canceled', err); }
                     } else {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
+                        const url = URL.createObjectURL(blob); const a = document.createElement('a');
                         a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                         alert("圖片已下載，你可以隨時分享它！");
                     }
@@ -690,9 +665,10 @@
             player.activePowerUp = null; player.powerUpTimer = 0; player.powerUpMaxTimer = 180;
             player.invincible = 0; player.jumpPower = -11; player.isDead = false;
             
-            player.accCapActive = playerData.selectedAcc === 'cap';
-            player.accGlovesActive = playerData.selectedAcc === 'gloves';
-            player.accShoesActive = playerData.selectedAcc === 'shoes';
+            // Stackable Accessories Initialization
+            player.accCapActive = playerData.equippedAccs.includes('cap');
+            player.accGlovesActive = playerData.equippedAccs.includes('gloves');
+            player.accShoesActive = playerData.equippedAccs.includes('shoes');
 
             for(let i=0; i<25; i++) decorations.push({ x: Math.random() * CW, y: Math.random() * CH, size: Math.random() * 2 + 1, speedY: Math.random() * 0.5 + 0.2 });
             platforms.push(new Platform(player.x - 15, 580, 0)); 
@@ -710,15 +686,15 @@
             if (spawnSpringNext && type === 0) { p.itemType = 1; spawnSpringNext = false; } 
             else if (type === 0) { 
                 let roll = Math.random();
-                if (score >= 200 && roll < 0.02) p.itemType = 5; 
-                else if (roll < 0.05) { 
+                if (roll < 0.05) p.itemType = 5; // 5% chance at ANY score
+                else if (score > 50 && roll < 0.07) { // 2% Bomb chance
                     p.itemType = 4;
                     let safeX = x > CW/2 ? x - 80 - Math.random()*50 : x + 80 + Math.random()*50;
                     if (safeX < 0) safeX = 10; if (safeX > CW - 60) safeX = CW - 70;
                     platforms.push(new Platform(safeX, yLevel + (Math.random()*20 - 10), 0));
                 }
-                else if (roll < 0.08) p.itemType = 3; 
-                else if (roll < 0.13) p.itemType = 2; 
+                else if (roll < 0.10) p.itemType = 3; // 3% Rocket
+                else if (roll < 0.15) p.itemType = 2; // 5% Shoes
             }
             platforms.push(p);
             if (score > 20 && Math.random() < 0.1) enemies.push(new Enemy(Math.random() * (CW - 40), yLevel - 50, level));
@@ -749,16 +725,16 @@
             }
         }
 
-        function spawnScoreText(x, y) { floatingTexts.push(new FloatingText(x, y, "+5")); }
+        function spawnScoreText(x, y, text) { floatingTexts.push(new FloatingText(x, y, text)); }
         function spawnInvincibilityStars(x, y) { for(let i=0; i<3; i++) invincibilityStars.push(new InvincibilityStar(x, y)); }
 
         function updateHUD() {
             document.getElementById('hud-score').innerText = score;
             document.getElementById('hud-coins').innerText = playerData.coins;
-            let hearts = ""; for(let i=0; i<3; i++) { hearts += (i < player.lives) ? "❤️" : "🤍"; }
-            document.getElementById('hud-lives').innerText = hearts;
-            const hudLeft = document.getElementById('hud-left');
-            if (level === 2 || level === 3) hudLeft.classList.replace('text-black', 'text-white'); else hudLeft.classList.replace('text-white', 'text-black');
+            
+            let hearts = ""; 
+            for(let i=0; i<3; i++) { hearts += (i < player.lives) ? svgHeartOn : svgHeartOff; }
+            document.getElementById('hud-lives').innerHTML = hearts;
         }
 
         // --- Rendering ---
@@ -786,7 +762,7 @@
             if (player.invincible > 0 && Math.floor(Date.now() / 100) % 2 === 0) ctx.globalAlpha = 0.5;
 
             const selected = CHARACTERS.find(c => c.id === playerData.selectedChar) || CHARACTERS[0];
-            const acc = playerData.selectedAcc;
+            const accs = playerData.equippedAccs;
             if (Math.abs(player.vx) > 0.1) player.lastDir = player.vx > 0 ? 1 : -1;
             let dir = player.lastDir; let isJumping = player.vy < 0;
             const hasLegs = !['ghost', 'slime'].includes(selected.id);
@@ -803,18 +779,16 @@
                 ctx.strokeStyle = selected.color; ctx.lineWidth = 4; ctx.lineCap = 'round'; const legXs = [-10, -3, 4, 11];
                 for (let i = 0; i < 4; i++) {
                     ctx.beginPath(); ctx.moveTo(legXs[i], player.height/2 - 4);
-                    
                     let targetY = isJumping ? player.height/2 + 2 : player.height/2 + 10; 
                     let targetX = isJumping ? legXs[i] + (i - 1.5) * 4 : legXs[i];
                     
                     if (player.isDead) { targetY = player.height/2 - 6; targetX = legXs[i] + (i - 1.5) * 10; }
-
                     ctx.lineTo(targetX, targetY); ctx.stroke();
+                    
                     if (player.activePowerUp === 'shoes' && !player.isDead) {
                         ctx.fillStyle = '#9ca3af'; ctx.fillRect(targetX - 3, targetY, 6, 4);
                         ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(targetX-2, targetY+4); ctx.lineTo(targetX+2, targetY+6); ctx.lineTo(targetX-2, targetY+8); ctx.stroke();
                     }
-                    
                     if (player.accShoesActive && !player.isDead && player.activePowerUp !== 'shoes') {
                         ctx.fillStyle = '#ef4444'; ctx.fillRect(targetX - 4, targetY - 2, 8, 4);
                         ctx.fillStyle = 'white'; ctx.fillRect(targetX + (dir===1? 2:-4), targetY - 2, 2, 4);
@@ -830,10 +804,8 @@
                 ctx.beginPath(); ctx.roundRect(-player.width/2, -player.height/2, player.width, player.height, 10); ctx.fill(); 
                 if (selected.id === 'astronaut') {
                     ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2; ctx.stroke();
-                    ctx.fillStyle = '#38bdf8'; 
-                    ctx.fillRect(dir === 1 ? 2 : -12, -8, 10, 10);
-                    ctx.fillStyle = 'rgba(255,255,255,0.5)'; 
-                    ctx.fillRect(dir === 1 ? 4 : -10, -6, 3, 3);
+                    ctx.fillStyle = '#38bdf8'; ctx.fillRect(dir === 1 ? 2 : -12, -8, 10, 10);
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(dir === 1 ? 4 : -10, -6, 3, 3);
                 }
             }
 
@@ -843,18 +815,18 @@
             if (selected.id === 'cyborg') { ctx.fillStyle = '#94a3b8'; ctx.fillRect(dir === 1 ? -15 : 0, -15, 15, 15); }
             if (selected.id === 'gold') { ctx.fillStyle = '#facc15'; ctx.beginPath(); ctx.moveTo(-10, -15); ctx.lineTo(10, -15); ctx.lineTo(15, -25); ctx.lineTo(5, -15); ctx.lineTo(0, -25); ctx.lineTo(-5, -15); ctx.lineTo(-15, -25); ctx.closePath(); ctx.fill(); }
 
+            // Stackable Accessories Rendering
             if (player.accCapActive) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(0, -15, 12, Math.PI, 0); ctx.fill(); ctx.fillRect(dir === 1 ? 0 : -15, -15, 15, 3); } 
-            else if (acc === 'star') { ctx.fillStyle = '#facc15'; let sx = dir === 1 ? -8 : 8; ctx.beginPath(); ctx.moveTo(sx, -18); ctx.lineTo(sx+3, -12); ctx.lineTo(sx+9, -12); ctx.lineTo(sx+4, -8); ctx.lineTo(sx+6, -2); ctx.lineTo(sx, -6); ctx.lineTo(sx-6, -2); ctx.lineTo(sx-4, -8); ctx.lineTo(sx-9, -12); ctx.lineTo(sx-3, -12); ctx.closePath(); ctx.fill(); }
+            
+            if (accs.includes('star')) { ctx.fillStyle = '#facc15'; let sx = dir === 1 ? -12 : 12; ctx.beginPath(); ctx.moveTo(sx, -18); ctx.lineTo(sx+3, -12); ctx.lineTo(sx+9, -12); ctx.lineTo(sx+4, -8); ctx.lineTo(sx+6, -2); ctx.lineTo(sx, -6); ctx.lineTo(sx-6, -2); ctx.lineTo(sx-4, -8); ctx.lineTo(sx-9, -12); ctx.lineTo(sx-3, -12); ctx.closePath(); ctx.fill(); }
 
             ctx.fillStyle = 'white'; let eyeOffsetX = dir === 1 ? 4 : -10; if (player.shootTimer > 0 && !player.isDead) eyeOffsetX = -3; 
             
-            if (acc === 'glasses' && !player.isDead) {
+            if (accs.includes('glasses') && !player.isDead) {
                 ctx.fillStyle = '#111827'; ctx.fillRect(-6 + eyeOffsetX, -8, 8, 6); ctx.fillRect(2 + eyeOffsetX, -8, 8, 6); ctx.fillRect(-2 + eyeOffsetX, -6, 8, 2); 
                 ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(-4 + eyeOffsetX, -7, 2, 4); ctx.fillRect(4 + eyeOffsetX, -7, 2, 4);
             } else if (selected.id !== 'astronaut') {
-                ctx.fillStyle = 'white';
-                ctx.fillRect(-4 + eyeOffsetX, -8, 6, 8); if (selected.id !== 'cyborg') ctx.fillRect(4 + eyeOffsetX, -8, 6, 8);
-                
+                ctx.fillStyle = 'white'; ctx.fillRect(-4 + eyeOffsetX, -8, 6, 8); if (selected.id !== 'cyborg') ctx.fillRect(4 + eyeOffsetX, -8, 6, 8);
                 if (player.isDead) {
                     ctx.strokeStyle = 'black'; ctx.lineWidth = 1.5; ctx.lineCap = 'round'; ctx.beginPath();
                     ctx.moveTo(-3 + eyeOffsetX, -7); ctx.lineTo(-1 + eyeOffsetX, -3); ctx.moveTo(-1 + eyeOffsetX, -7); ctx.lineTo(-3 + eyeOffsetX, -3);
@@ -1032,7 +1004,6 @@
                 player.vy += player.gravity; if (player.vy > player.maxFallSpeed) player.vy = player.maxFallSpeed;
             }
 
-            // Apply selected control method
             if (playerData.controlMethod === 'gyro' && tiltActive && tiltVx !== 0) {
                 player.vx = tiltVx;
             } else if (playerData.controlMethod === 'touch' && touchX !== null) {
@@ -1091,7 +1062,11 @@
                 for (let e of enemies) {
                     if (!e.dead && !proj.dead && proj.x > e.x && proj.x < e.x + e.width && proj.y > e.y && proj.y < e.y + e.height) {
                         e.hp -= proj.weapon.dmg; proj.dead = true;
-                        if (e.hp <= 0) { e.dead = true; score += 5; playerData.coins += 5; updateHUD(); spawnScoreText(e.x + e.width/2, e.y); }
+                        if (e.hp <= 0) { 
+                            e.dead = true; 
+                            let pts = getEnemyKillScore();
+                            score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`); 
+                        }
                     }
                 }
             }
@@ -1104,9 +1079,13 @@
                         else if (p.itemType === 3) activatePowerUp('rocket'); 
                         else if (p.itemType === 4) { 
                             if (player.activePowerUp === 'rocket' || player.invincible > 0) {
-                                p.itemType = 0; score += 5; playerData.coins += 5; updateHUD(); spawnScoreText(ix+10, iy); 
+                                p.itemType = 0; 
+                                let pts = getEnemyKillScore();
+                                score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(ix+10, iy, `+${pts}`); 
                             } else if (player.accGlovesActive) {
-                                player.accGlovesActive = false; p.itemType = 0; score += 5; updateHUD(); spawnScoreText(ix+10, iy);
+                                player.accGlovesActive = false; p.itemType = 0; 
+                                let pts = getEnemyKillScore();
+                                score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(ix+10, iy, `+${pts}`);
                             } else { takeDamage(); }
                         } else if (p.itemType === 5) { if (player.lives < 3) { player.lives++; updateHUD(); } }
                         
@@ -1119,14 +1098,22 @@
                 if (e.dead) continue;
                 if (player.x + player.width > e.x && player.x < e.x + e.width && player.y + player.height > e.y && player.y < e.y + e.height) {
                     if (player.activePowerUp === 'rocket' || player.invincible > 0) { 
-                        e.hp = 0; e.dead = true; score += 5; playerData.coins += 5; updateHUD(); spawnScoreText(e.x + e.width/2, e.y);
+                        e.hp = 0; e.dead = true; 
+                        let pts = getEnemyKillScore();
+                        score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`);
                     } 
                     else if (player.accCapActive) {
-                        player.accCapActive = false; e.hp = 0; e.dead = true; player.vy = player.jumpPower; score += 5; updateHUD(); spawnScoreText(e.x + e.width/2, e.y);
+                        player.accCapActive = false; e.hp = 0; e.dead = true; player.vy = player.jumpPower; 
+                        let pts = getEnemyKillScore();
+                        score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`);
                     }
                     else if (player.vy > 0 && player.y + player.height - player.vy <= e.y + 15) { 
                         e.hp -= 5; player.vy = player.jumpPower; 
-                        if (e.hp <= 0) { e.dead = true; score += 5; playerData.coins += 5; updateHUD(); spawnScoreText(e.x + e.width/2, e.y); }
+                        if (e.hp <= 0) { 
+                            e.dead = true; 
+                            let pts = getEnemyKillScore();
+                            score += pts; playerData.coins += pts; updateHUD(); spawnScoreText(e.x + e.width/2, e.y, `+${pts}`); 
+                        }
                     } 
                     else { takeDamage(); }
                 }
